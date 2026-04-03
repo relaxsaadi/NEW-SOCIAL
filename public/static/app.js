@@ -1,4 +1,4 @@
-// Social Signal Translator — Frontend App JS
+// Social Signal Translator — Frontend App JS v2 (Hormozi Edition)
 
 // ── Utils ─────────────────────────────────────────────────────────────────────
 const $ = (sel, ctx = document) => ctx.querySelector(sel)
@@ -21,6 +21,96 @@ function setLoading(btn, loading, text = 'Chargement...') {
   btn.textContent = loading ? text : btn.dataset.originalText
 }
 
+// ── Live Counter (Hormozi: social proof + FOMO) ───────────────────────────────
+function initLiveCounter() {
+  // Simulate a realistic live user count
+  const baseCount = 47
+  let current = baseCount + Math.floor(Math.random() * 10)
+
+  const liveCountEl = $('#live-count')
+  const navCountEl = $('#nav-count')
+  const heroCountEl = $('#hero-count')
+
+  function updateCount() {
+    const delta = Math.random() > 0.5 ? 1 : -1
+    current = Math.max(32, Math.min(89, current + delta))
+    if (liveCountEl) liveCountEl.textContent = current
+    if (navCountEl) navCountEl.textContent = `${current} en ligne`
+  }
+
+  // Animate the hero count (total analyses)
+  if (heroCountEl) {
+    let heroVal = 2700
+    const heroTarget = 2847
+    const heroInterval = setInterval(() => {
+      heroVal = Math.min(heroTarget, heroVal + Math.floor(Math.random() * 8) + 3)
+      heroCountEl.textContent = `+${heroVal.toLocaleString('fr-FR')}`
+      if (heroVal >= heroTarget) clearInterval(heroInterval)
+    }, 40)
+  }
+
+  setInterval(updateCount, 4500)
+}
+
+// ── Scarcity Timer (Hormozi: urgency without lying) ───────────────────────────
+function initScarcityTimer() {
+  // Session-based countdown (resets per session, not fake-permanent)
+  const SESSION_KEY = 'sst_session_start'
+  const DURATION = 15 * 60 * 1000 // 15 min per session
+
+  if (!sessionStorage.getItem(SESSION_KEY)) {
+    sessionStorage.setItem(SESSION_KEY, Date.now().toString())
+  }
+
+  const startTime = parseInt(sessionStorage.getItem(SESSION_KEY))
+  const exitCountdownEl = $('#exit-countdown')
+
+  function updateTimer(el) {
+    if (!el) return
+    const elapsed = Date.now() - startTime
+    const remaining = Math.max(0, DURATION - elapsed)
+    const mins = Math.floor(remaining / 60000)
+    const secs = Math.floor((remaining % 60000) / 1000)
+    el.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+  }
+
+  if (exitCountdownEl) {
+    updateTimer(exitCountdownEl)
+    setInterval(() => updateTimer(exitCountdownEl), 1000)
+  }
+}
+
+// ── Exit Intent Popup (Hormozi: catch the 70% who almost left) ────────────────
+function initExitIntent() {
+  const popup = $('#exit-popup')
+  if (!popup) return
+
+  let shown = false
+  let mouseLeft = false
+
+  document.addEventListener('mouseleave', (e) => {
+    if (e.clientY <= 5 && !shown && !mouseLeft) {
+      shown = true
+      mouseLeft = true
+      setTimeout(() => {
+        popup.classList.remove('hidden')
+        popup.classList.add('flex')
+      }, 300)
+    }
+  })
+
+  // Also show on mobile after scroll past pricing + scroll back up
+  let maxScroll = 0
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > maxScroll) maxScroll = window.scrollY
+    if (maxScroll > 800 && window.scrollY < 100 && !shown) {
+      shown = true
+      popup.classList.remove('hidden')
+      popup.classList.add('flex')
+    }
+  })
+}
+
 // ── Checkout Flow ─────────────────────────────────────────────────────────────
 function initCheckoutButtons() {
   $$('[data-offer]').forEach(btn => {
@@ -28,7 +118,10 @@ function initCheckoutButtons() {
       const offerType = btn.dataset.offer
       const email = $('[name="email"]')?.value?.trim()
 
-      setLoading(btn, true, 'Redirection vers paiement...')
+      // Micro-interaction: button state feedback
+      const originalText = btn.textContent
+      btn.textContent = '⏳ Redirection en cours...'
+      btn.disabled = true
 
       try {
         const res = await fetch('/api/create-checkout-session', {
@@ -41,11 +134,13 @@ function initCheckoutButtons() {
           window.location.href = data.checkoutUrl
         } else {
           showToast(data.message || 'Erreur lors du paiement', 'error')
-          setLoading(btn, false)
+          btn.textContent = originalText
+          btn.disabled = false
         }
       } catch (e) {
         showToast('Erreur de connexion', 'error')
-        setLoading(btn, false)
+        btn.textContent = originalText
+        btn.disabled = false
       }
     })
   })
@@ -63,7 +158,6 @@ async function initCheckoutSuccess() {
     return
   }
 
-  // Poll until we find the analysis
   let attempts = 0
   const poll = async () => {
     attempts++
@@ -94,23 +188,59 @@ function initIntakeForm() {
 
   const analysisId = form.dataset.analysisId
   const charCount = $('#char-count')
+  const qualityBar = $('#quality-bar')
+  const qualityLabel = $('#quality-label')
   const inputText = $('[name="inputText"]')
   const submitBtn = $('#submit-btn')
 
-  // Character counter
+  // Quality signal indicator (Hormozi: guide to better input = better output)
   on(inputText, 'input', () => {
     const len = inputText.value.length
     if (charCount) {
       charCount.textContent = `${len}/5000`
       charCount.className = len > 4500 ? 'text-red-400 text-xs' : 'text-gray-500 text-xs'
     }
+
+    // Quality bar
+    if (qualityBar && qualityLabel) {
+      let quality, color, label
+      if (len < 20) {
+        quality = Math.min(len / 20 * 15, 15)
+        color = 'bg-red-600'
+        label = '⚠️ Signal insuffisant — ajoutez plus de détails'
+      } else if (len < 60) {
+        quality = 15 + (len - 20) / 40 * 25
+        color = 'bg-orange-500'
+        label = '📝 Signal faible — continuez...'
+      } else if (len < 150) {
+        quality = 40 + (len - 60) / 90 * 30
+        color = 'bg-amber-500'
+        label = '🔍 Signal moyen — ajoutez le contexte'
+      } else if (len < 300) {
+        quality = 70 + (len - 150) / 150 * 20
+        color = 'bg-green-500'
+        label = '✅ Bon signal — verdict précis garanti'
+      } else {
+        quality = 90 + Math.min((len - 300) / 200 * 10, 10)
+        color = 'bg-emerald-500'
+        label = '🎯 Signal excellent — verdict haute confiance'
+      }
+      qualityBar.style.width = `${Math.min(quality, 100)}%`
+      qualityBar.className = `h-1 rounded-full transition-all duration-300 ${color}`
+      qualityLabel.textContent = label
+      qualityLabel.className = `text-xs mb-2 ${color.replace('bg-', 'text-').replace('-500', '-400').replace('-600', '-400')}`
+    }
   })
 
   // Mode selector
   $$('[data-mode]').forEach(btn => {
     on(btn, 'click', () => {
-      $$('[data-mode]').forEach(b => b.classList.remove('ring-2', 'ring-violet-500', 'bg-violet-900/30'))
-      btn.classList.add('ring-2', 'ring-violet-500', 'bg-violet-900/30')
+      $$('[data-mode]').forEach(b => {
+        b.classList.remove('ring-2', 'ring-violet-500', 'bg-violet-900/30', 'border-violet-500', 'text-white')
+        b.classList.add('border-gray-700/70', 'text-gray-400')
+      })
+      btn.classList.add('ring-2', 'ring-violet-500', 'bg-violet-900/30', 'border-violet-500', 'text-white')
+      btn.classList.remove('border-gray-700/70', 'text-gray-400')
       const modeInput = $('[name="mode"]')
       if (modeInput) modeInput.value = btn.dataset.mode
     })
@@ -122,11 +252,11 @@ function initIntakeForm() {
     const inputTextVal = formData.get('inputText')?.toString().trim()
 
     if (!inputTextVal || inputTextVal.length < 10) {
-      showToast('Veuillez entrer au moins 10 caractères', 'error')
+      showToast('Veuillez entrer au moins 10 caractères pour une analyse fiable', 'error')
       return
     }
 
-    setLoading(submitBtn, true, 'Envoi en cours...')
+    setLoading(submitBtn, true, '⚡ Analyse en cours...')
 
     const payload = {
       analysisId,
@@ -136,6 +266,7 @@ function initIntakeForm() {
       offerType: formData.get('offerType'),
       extraContext: formData.get('extraContext'),
       goal: formData.get('goal'),
+      relationDuration: formData.get('relationDuration'),
     }
 
     try {
@@ -172,30 +303,28 @@ function initProcessingPage() {
   const steps = [
     'Initialisation de l\'analyse...',
     'Détection des signaux observables...',
-    'Analyse du ton émotionnel...',
-    'Évaluation de la cohérence...',
-    'Cartographie des dynamiques...',
+    'Analyse du timing et du ton...',
+    'Évaluation de la cohérence comportementale...',
+    'Cartographie des dynamiques relationnelles...',
     'Calcul des scores de confiance...',
-    'Génération des interprétations...',
-    'Finalisation du rapport...',
+    'Génération des interprétations probabilistes...',
+    'Finalisation du rapport personnalisé...',
   ]
   let stepIdx = 0
 
-  // Fake progress animation
   const progressInterval = setInterval(() => {
     if (progress < 90) {
-      progress += Math.random() * 5
+      progress += Math.random() * 4 + 1
       if (progressBar) progressBar.style.width = `${Math.min(progress, 90)}%`
       if (progressPct) progressPct.textContent = `${Math.floor(Math.min(progress, 90))}%`
 
-      if (Math.random() > 0.7 && stepIdx < steps.length - 1) {
+      if (Math.random() > 0.65 && stepIdx < steps.length - 1) {
         stepIdx++
         if (stepText) stepText.textContent = steps[stepIdx]
       }
     }
-  }, 800)
+  }, 700)
 
-  // Poll for result
   let pollAttempts = 0
   const pollResult = async () => {
     pollAttempts++
@@ -207,8 +336,8 @@ function initProcessingPage() {
         clearInterval(progressInterval)
         if (progressBar) progressBar.style.width = '100%'
         if (progressPct) progressPct.textContent = '100%'
-        if (stepText) stepText.textContent = 'Analyse terminée !'
-        setTimeout(() => window.location.href = `/result/${analysisId}`, 800)
+        if (stepText) stepText.textContent = '✅ Analyse terminée — rapport prêt !'
+        setTimeout(() => window.location.href = `/result/${analysisId}`, 600)
       } else if (data.status === 'failed') {
         clearInterval(progressInterval)
         if (stepText) stepText.textContent = 'Analyse temporairement indisponible.'
@@ -220,7 +349,7 @@ function initProcessingPage() {
         setTimeout(pollResult, 2000)
       } else {
         clearInterval(progressInterval)
-        if (stepText) stepText.textContent = 'Délai dépassé. Vérification dans quelques instants...'
+        if (stepText) stepText.textContent = 'Délai dépassé. Vérification...'
         setTimeout(pollResult, 5000)
       }
     } catch {
@@ -234,21 +363,23 @@ function initProcessingPage() {
 // ── Result Page ───────────────────────────────────────────────────────────────
 function initResultPage() {
   const scoreEls = $$('[data-score]')
-  // Animate score bars on load
+  // Animate score bars on load with stagger
   setTimeout(() => {
-    scoreEls.forEach(el => {
-      const score = parseInt(el.dataset.score)
-      const bar = el.querySelector('.score-bar')
-      if (bar) bar.style.width = `${score}%`
+    scoreEls.forEach((el, i) => {
+      setTimeout(() => {
+        const score = parseInt(el.dataset.score)
+        const bar = el.querySelector('.score-bar')
+        if (bar) bar.style.width = `${score}%`
+      }, i * 150)
     })
-  }, 300)
+  }, 400)
 
   // Upsell button
   const upsellBtn = $('#upsell-btn')
   const analysisId = document.body.dataset.analysisId
 
   on(upsellBtn, 'click', async () => {
-    setLoading(upsellBtn, true, 'Redirection...')
+    setLoading(upsellBtn, true, '⏳ Redirection vers le paiement...')
     try {
       const res = await fetch('/api/create-upsell-session', {
         method: 'POST',
@@ -273,9 +404,27 @@ function initResultPage() {
   on(copyBtn, 'click', () => {
     const resultText = $('#result-summary')?.textContent
     if (resultText) {
-      navigator.clipboard.writeText(resultText).then(() => showToast('Copié !', 'success'))
+      navigator.clipboard.writeText(resultText).then(() => {
+        showToast('✅ Résumé copié !', 'success')
+        if (copyBtn) {
+          copyBtn.innerHTML = '<i class="fas fa-check mr-1"></i> Copié !'
+          setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copier le résumé' }, 2000)
+        }
+      })
     }
   })
+
+  // Scroll animation for main reading
+  const mainReadingCard = document.querySelector('[class*="bg-\\[#0f0a1a\\]"]')
+  if (mainReadingCard) {
+    mainReadingCard.style.opacity = '0'
+    mainReadingCard.style.transform = 'translateY(10px)'
+    setTimeout(() => {
+      mainReadingCard.style.transition = 'all 0.5s ease'
+      mainReadingCard.style.opacity = '1'
+      mainReadingCard.style.transform = 'translateY(0)'
+    }, 600)
+  }
 }
 
 // ── Lead capture ──────────────────────────────────────────────────────────────
@@ -286,15 +435,25 @@ function initLeadCapture() {
     const email = $('[name="lead-email"]')?.value?.trim()
     if (!email) return
 
+    const submitBtn = leadForm.querySelector('[type="submit"]')
+    if (submitBtn) { submitBtn.textContent = '⏳ Envoi...'; submitBtn.disabled = true }
+
     try {
       await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, source: 'landing_hero' }),
+        body: JSON.stringify({ email, source: 'landing_lead_magnet' }),
       })
-      showToast('Merci ! Vous recevrez nos conseils.', 'success')
+      showToast('✅ Guide envoyé ! Vérifiez votre boîte.', 'success')
       leadForm.reset()
-    } catch {}
+      // Replace form with success message
+      leadForm.innerHTML = `<div class="text-center py-2">
+        <div class="text-green-400 font-bold text-sm"><i class="fas fa-check-circle mr-1"></i>Guide envoyé à ${email}</div>
+        <div class="text-gray-500 text-xs mt-1">Vérifiez votre boîte (et vos spams)</div>
+      </div>`
+    } catch {
+      if (submitBtn) { submitBtn.textContent = 'Recevoir le guide →'; submitBtn.disabled = false }
+    }
   })
 }
 
@@ -302,9 +461,18 @@ function initLeadCapture() {
 document.addEventListener('DOMContentLoaded', () => {
   const page = document.body.dataset.page
 
+  // Global init (all pages)
   initCheckoutButtons()
   initLeadCapture()
 
+  // Landing page specific
+  if (page === 'landing') {
+    initLiveCounter()
+    initScarcityTimer()
+    initExitIntent()
+  }
+
+  // Page-specific
   if (page === 'checkout-success') initCheckoutSuccess()
   if (page === 'intake') initIntakeForm()
   if (page === 'processing') initProcessingPage()

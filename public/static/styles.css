@@ -4,9 +4,19 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes pulse-glow {
   0%, 100% { box-shadow: 0 0 20px rgba(124, 58, 237, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(124, 58, 237, 0.6); }
+  50% { box-shadow: 0 0 50px rgba(124, 58, 237, 0.7); }
+}
+
+@keyframes pulse-glow-green {
+  0%, 100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
+  50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.5); }
 }
 
 @keyframes scan {
@@ -19,11 +29,34 @@
   50% { opacity: 0; }
 }
 
-.fade-in-up { animation: fadeInUp 0.6s ease forwards; }
-.pulse-glow { animation: pulse-glow 2s infinite; }
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes numberCount {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.fade-in-up { animation: fadeInUp 0.7s ease forwards; }
+.fade-in-down { animation: fadeInDown 0.5s ease forwards; }
+.slide-in-right { animation: slideInRight 0.6s ease forwards; }
+.pulse-glow { animation: pulse-glow 2.5s infinite; }
+.pulse-glow-green { animation: pulse-glow-green 2s infinite; }
+
+/* Staggered animations */
+.fade-in-up:nth-child(1) { animation-delay: 0.1s; }
+.fade-in-up:nth-child(2) { animation-delay: 0.2s; }
+.fade-in-up:nth-child(3) { animation-delay: 0.3s; }
 
 .score-bar {
-  transition: width 1.5s ease-out;
+  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .typing-cursor::after {
@@ -33,17 +66,24 @@
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(90deg, #7c3aed, #3b82f6);
+  background: linear-gradient(135deg, #7c3aed, #3b82f6, #7c3aed);
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: shimmer 4s linear infinite;
 }
 
 /* Glass card */
 .glass-card {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: border-color 0.2s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(124, 58, 237, 0.2);
 }
 
 /* Progress steps */
@@ -58,4 +98,35 @@
   height: 2px;
   background: linear-gradient(90deg, transparent, #7c3aed, transparent);
   animation: scan 2s linear infinite;
+}
+
+/* Live counter pulse */
+#scarcity-counter {
+  animation: pulse-glow 3s infinite;
+}
+
+/* Pricing card hover */
+[data-offer] {
+  transition: all 0.2s ease;
+}
+
+/* Result score bar glow on load */
+.score-bar {
+  box-shadow: 0 0 8px currentColor;
+  opacity: 0.9;
+}
+
+/* Exit popup overlay */
+#exit-popup {
+  animation: fadeInUp 0.3s ease;
+}
+
+/* Scarcity bar */
+#scarcity-bar {
+  animation: fadeInDown 0.5s ease;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
 }
