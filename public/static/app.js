@@ -54,30 +54,22 @@ function initLiveCounter() {
 
 // ── Scarcity Timer (Hormozi: urgency without lying) ───────────────────────────
 function initScarcityTimer() {
-  // Session-based countdown (resets per session, not fake-permanent)
-  const SESSION_KEY = 'sst_session_start'
-  const DURATION = 15 * 60 * 1000 // 15 min per session
-
-  if (!sessionStorage.getItem(SESSION_KEY)) {
-    sessionStorage.setItem(SESSION_KEY, Date.now().toString())
-  }
-
-  const startTime = parseInt(sessionStorage.getItem(SESSION_KEY))
+  // Exit popup gets its own 10-minute countdown that starts fresh on page load
+  const POPUP_DURATION = 10 * 60 * 1000 // 10 min
+  const popupStart = Date.now()
   const exitCountdownEl = $('#exit-countdown')
 
-  function updateTimer(el) {
-    if (!el) return
-    const elapsed = Date.now() - startTime
-    const remaining = Math.max(0, DURATION - elapsed)
+  function updateTimer() {
+    if (!exitCountdownEl) return
+    const elapsed = Date.now() - popupStart
+    const remaining = Math.max(0, POPUP_DURATION - elapsed)
     const mins = Math.floor(remaining / 60000)
     const secs = Math.floor((remaining % 60000) / 1000)
-    el.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+    exitCountdownEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
   }
 
-  if (exitCountdownEl) {
-    updateTimer(exitCountdownEl)
-    setInterval(() => updateTimer(exitCountdownEl), 1000)
-  }
+  updateTimer()
+  setInterval(updateTimer, 1000)
 }
 
 // ── Exit Intent Popup (Hormozi: catch the 70% who almost left) ────────────────

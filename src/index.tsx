@@ -214,7 +214,7 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
       <p class="text-gray-400 text-sm mb-5">La personne qui vous a envoyé ce message <strong class="text-white">ne vous attend pas</strong>. Chaque heure d'hésitation est une opportunité perdue.</p>
       <div class="bg-violet-900/30 border border-violet-700/30 rounded-xl p-4 mb-5">
         <div class="text-gray-400 text-xs mb-1">Offre valable encore</div>
-        <div id="exit-countdown" class="font-mono text-3xl font-black text-violet-400">09:59</div>
+        <div id="exit-countdown" class="font-mono text-3xl font-black text-violet-400">10:00</div>
       </div>
       <a href="#pricing" onclick="document.getElementById('exit-popup').classList.add('hidden'); document.getElementById('exit-popup').classList.remove('flex')"
         class="block w-full bg-violet-600 hover:bg-violet-500 text-white py-4 rounded-xl font-black transition-colors">
