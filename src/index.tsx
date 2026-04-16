@@ -752,7 +752,7 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
         <div class="w-6 h-6 bg-violet-600 rounded flex items-center justify-center">
           <i class="fas fa-brain text-white text-xs"></i>
         </div>
-        <span>Social Signal Translator © 2026 — Strategix</span>
+        <span>Social Signal Translator © 2026 — Strategixs</span>
       </div>
       <div class="flex items-center gap-6">
         <a href="/privacy" class="hover:text-gray-400 transition-colors">Confidentialité</a>
@@ -1461,9 +1461,12 @@ function privacyContent(): string {
   <h2 class="text-xl font-bold text-white mt-6">1. Responsable du traitement</h2>
   <p>Le responsable du traitement des données est :</p>
   <ul class="list-disc pl-5 space-y-1">
-    <li><strong>Nom :</strong> Strategix</li>
-    <li><strong>Email :</strong> contact@strategix.net</li>
-    <li><strong>Site :</strong> https://webapp-8sl.pages.dev</li>
+    <li><strong>Raison sociale :</strong> Strategixs — Société par actions simplifiée (SAS)</li>
+    <li><strong>Adresse :</strong> 50 Avenue des Champs Élysées, 75008 Paris, France</li>
+    <li><strong>SIREN :</strong> 929 145 621</li>
+    <li><strong>SIRET :</strong> 929 145 621 00017</li>
+    <li><strong>N° TVA :</strong> FR61929145621</li>
+    <li><strong>Email :</strong> social@strategixs.net</li>
   </ul>
   <p class="mt-2">Pour toute question relative à vos données personnelles, contactez-nous à l'adresse ci-dessus.</p>
 
@@ -1544,7 +1547,7 @@ function privacyContent(): string {
     <li><strong>Droit à la limitation :</strong> restreindre le traitement dans certains cas.</li>
     <li><strong>Droit de retrait du consentement :</strong> à tout moment, sans affecter la licéité du traitement antérieur.</li>
   </ul>
-  <p class="mt-3">Pour exercer vos droits, envoyez un email à <strong>contact@strategix.net</strong> avec l'objet "Demande RGPD". Nous répondrons sous 30 jours maximum.</p>
+  <p class="mt-3">Pour exercer vos droits, envoyez un email à <strong>social@strategixs.net</strong> avec l'objet "Demande RGPD". Nous répondrons sous 30 jours maximum.</p>
 
   <h2 class="text-xl font-bold text-white mt-6">10. Réclamation</h2>
   <p>Si vous estimez que le traitement de vos données ne respecte pas la réglementation, vous pouvez introduire une réclamation auprès de la <strong>CNIL</strong> (Commission Nationale de l'Informatique et des Libertés) :</p>
@@ -1579,8 +1582,11 @@ function termsContent(): string {
   <h2 class="text-xl font-bold text-white mt-6">1. Mentions légales</h2>
   <p>Le service Social Signal Translator est édité par :</p>
   <ul class="list-disc pl-5 space-y-1">
-    <li><strong>Éditeur :</strong> Strategix</li>
-    <li><strong>Email :</strong> contact@strategix.net</li>
+    <li><strong>Éditeur :</strong> Strategixs — Société par actions simplifiée (SAS)</li>
+    <li><strong>Adresse :</strong> 50 Avenue des Champs Élysées, 75008 Paris, France</li>
+    <li><strong>SIREN :</strong> 929 145 621 · <strong>SIRET :</strong> 929 145 621 00017</li>
+    <li><strong>N° TVA intracommunautaire :</strong> FR61929145621</li>
+    <li><strong>Email :</strong> social@strategixs.net</li>
     <li><strong>Hébergeur :</strong> Cloudflare, Inc. — 101 Townsend Street, San Francisco, CA 94107, USA — <a href="https://www.cloudflare.com" class="text-violet-400 hover:underline" target="_blank" rel="noopener">www.cloudflare.com</a></li>
   </ul>
 
@@ -1616,11 +1622,11 @@ function termsContent(): string {
   <h2 class="text-xl font-bold text-white mt-6">6. Droit de rétractation</h2>
   <p>Conformément à l'article L221-28 du Code de la consommation, le droit de rétractation <strong>ne s'applique pas</strong> aux contrats de fourniture de contenu numérique non fourni sur un support matériel dont l'exécution a commencé avec l'accord préalable du consommateur.</p>
   <p class="mt-2">En validant votre commande et en soumettant un texte pour analyse, vous acceptez expressément que l'exécution du service commence immédiatement et renoncez à votre droit de rétractation.</p>
-  <p class="mt-2"><strong>Garantie de satisfaction :</strong> malgré l'inapplicabilité du droit de rétractation, nous proposons un remboursement en cas de dysfonctionnement technique avéré empêchant la délivrance de l'analyse (erreur serveur, échec de génération). Contactez contact@strategix.net dans les 7 jours suivant l'achat.</p>
+  <p class="mt-2"><strong>Garantie de satisfaction :</strong> malgré l'inapplicabilité du droit de rétractation, nous proposons un remboursement en cas de dysfonctionnement technique avéré empêchant la délivrance de l'analyse (erreur serveur, échec de génération). Contactez social@strategixs.net dans les 7 jours suivant l'achat.</p>
 
   <h2 class="text-xl font-bold text-white mt-6">7. Propriété intellectuelle</h2>
   <ul class="list-disc pl-5 space-y-1">
-    <li><strong>Le service :</strong> l'ensemble du site, de son design, de son code source et de ses algorithmes est la propriété exclusive de Strategix. Toute reproduction est interdite.</li>
+    <li><strong>Le service :</strong> l'ensemble du site, de son design, de son code source et de ses algorithmes est la propriété exclusive de Strategixs. Toute reproduction est interdite.</li>
     <li><strong>Vos textes :</strong> les textes que vous soumettez restent votre propriété. Vous nous accordez une licence temporaire et limitée pour les traiter via notre moteur IA.</li>
     <li><strong>Les analyses :</strong> les analyses générées vous sont concédées à titre de licence personnelle, non cessible. Vous pouvez les utiliser librement à titre privé.</li>
   </ul>
@@ -1640,9 +1646,9 @@ function termsContent(): string {
   <p>Social Signal Translator fournit des analyses <strong>probabilistes générées par intelligence artificielle</strong>. En conséquence :</p>
   <ul class="list-disc pl-5 space-y-1">
     <li>Les résultats ne sont pas garantis comme exacts, complets ou adaptés à votre situation spécifique.</li>
-    <li>Strategix ne peut être tenu responsable des décisions prises par l'utilisateur sur la base des analyses.</li>
-    <li>Strategix ne peut être tenu responsable des dommages indirects, perte de chance, préjudice moral ou émotionnel liés à l'utilisation du service.</li>
-    <li>La responsabilité de Strategix est limitée au montant payé par l'utilisateur pour l'analyse concernée.</li>
+    <li>Strategixs ne peut être tenu responsable des décisions prises par l'utilisateur sur la base des analyses.</li>
+    <li>Strategixs ne peut être tenu responsable des dommages indirects, perte de chance, préjudice moral ou émotionnel liés à l'utilisation du service.</li>
+    <li>La responsabilité de Strategixs est limitée au montant payé par l'utilisateur pour l'analyse concernée.</li>
   </ul>
 
   <h2 class="text-xl font-bold text-white mt-6">10. Âge minimum</h2>
@@ -1659,7 +1665,7 @@ function termsContent(): string {
   <p class="mt-2">Conformément à l'article L612-1 du Code de la consommation, en cas de litige, vous pouvez recourir gratuitement au service de médiation de la consommation. Nous vous communiquerons les coordonnées du médiateur compétent sur simple demande.</p>
 
   <h2 class="text-xl font-bold text-white mt-6">14. Contact</h2>
-  <p>Pour toute question relative aux présentes CGU : <strong>contact@strategix.net</strong></p>
+  <p>Pour toute question relative aux présentes CGU : <strong>social@strategixs.net</strong></p>
   `
 }
 
