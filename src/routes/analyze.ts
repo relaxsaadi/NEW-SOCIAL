@@ -276,10 +276,21 @@ analyze.post('/api/generate-reply', async (c) => {
   }
 })
 
-// Webhook upsell payment
+// Webhook upsell payment — verify via Stripe session lookup
 analyze.post('/api/webhooks/upsell-paid', async (c) => {
-  const { upsellId } = await c.req.json() as { upsellId?: string }
+  const { upsellId, sessionId } = await c.req.json() as { upsellId?: string; sessionId?: string }
   if (!upsellId) return c.json({ error: 'MISSING_ID' }, 400)
+
+  // Verify that this upsell exists and has a matching Stripe session
+  const upsell = await c.env.DB.prepare(
+    `SELECT id, stripe_session_id, status FROM upsells WHERE id = ?`
+  ).bind(upsellId).first<{ id: string; stripe_session_id: string; status: string }>()
+
+  if (!upsell) return c.json({ error: 'NOT_FOUND' }, 404)
+  if (upsell.status === 'purchased') return c.json({ success: true, already: true })
+  if (sessionId && upsell.stripe_session_id !== sessionId) {
+    return c.json({ error: 'INVALID_SESSION' }, 403)
+  }
 
   const ts = now()
   await c.env.DB.prepare(

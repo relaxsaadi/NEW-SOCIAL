@@ -1,0 +1,24 @@
+# ============================================
+# Social Signal Translator - Variables d'environnement
+# ============================================
+# Copiez ce fichier en .dev.vars et remplissez les valeurs
+# cp .dev.vars.example .dev.vars
+
+# --- Stripe ---
+STRIPE_SECRET_KEY=your_stripe_secret_key_here
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret_here
+STRIPE_PRICE_QUICK=your_stripe_price_id_here
+STRIPE_PRICE_DEEP=your_stripe_price_id_here
+STRIPE_PRICE_PATTERN=your_stripe_price_id_here
+
+# --- OpenAI / LLM ---
+LLM_API_KEY=your_openai_api_key_here
+LLM_MODEL=gpt-4o-mini
+LLM_BASE_URL=https://api.openai.com/v1
+
+# --- Admin Dashboard ---
+ADMIN_USER=admin
+ADMIN_PASS=changez_moi_en_production
+
+# --- App ---
+APP_URL=http://localhost:3000

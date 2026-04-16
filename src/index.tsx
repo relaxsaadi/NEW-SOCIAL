@@ -1,9 +1,11 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
+import { secureHeaders } from 'hono/secure-headers'
 import { serveStatic } from 'hono/cloudflare-workers'
 import type { Bindings } from './lib/types'
 import { now, ulid, logEvent } from './lib/db'
+import { rateLimit } from './lib/rate-limit'
 import checkout from './routes/checkout'
 import analyze from './routes/analyze'
 import admin from './routes/admin'
@@ -12,8 +14,17 @@ const app = new Hono<{ Bindings: Bindings }>()
 
 // Middleware
 app.use('*', logger())
+app.use('*', secureHeaders())
 app.use('/api/*', cors())
 app.use('/static/*', serveStatic({ root: './' }))
+
+// Rate limiting per endpoint
+app.use('/api/create-checkout-session', rateLimit(5, 60_000, 'checkout'))
+app.use('/api/analyze', rateLimit(5, 60_000, 'analyze'))
+app.use('/api/leads', rateLimit(3, 60_000, 'leads'))
+app.use('/api/create-upsell-session', rateLimit(5, 60_000, 'upsell'))
+app.use('/api/generate-reply', rateLimit(5, 60_000, 'reply'))
+app.use('/api/webhooks/*', rateLimit(30, 60_000, 'webhooks'))
 
 // Routes
 app.route('/', checkout)

@@ -1,14 +1,21 @@
 import { Hono } from 'hono'
 import { basicAuth } from 'hono/basic-auth'
 import type { Bindings } from '../lib/types'
+import { authRateLimit } from '../lib/rate-limit'
 
 const admin = new Hono<{ Bindings: Bindings }>()
+
+// Brute-force protection: lock out after 5 failed attempts for 15 minutes
+admin.use('/admin/*', authRateLimit(5, 15 * 60_000))
 
 // Basic Auth middleware for all admin routes
 admin.use('/admin/*', async (c, next) => {
   const user = c.env.ADMIN_USER || 'admin'
-  const pass = c.env.ADMIN_PASS || 'admin'
-  const auth = basicAuth({ username: user, password: pass })
+  const pass = c.env.ADMIN_PASS
+  if (!pass || pass === 'admin') {
+    console.warn('⚠️  ADMIN_PASS is not set or uses the default value. Set a strong password in .dev.vars / secrets.')
+  }
+  const auth = basicAuth({ username: user, password: pass || 'admin' })
   return auth(c, next)
 })
 
