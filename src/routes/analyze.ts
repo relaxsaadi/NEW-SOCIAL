@@ -133,10 +133,25 @@ async function runAnalysis(
   }
 
   // Extract confidence score
+  // LLM returns scores on a 0-10 scale, normalize to 0-1
   const scores = resultJson.scores as Record<string, number> | undefined
-  const confidence = scores
-    ? (Object.values(scores).reduce((a, b) => a + b, 0) / Object.values(scores).length / 100)
-    : 0.7
+  const mainReading = resultJson.main_reading as { probability_score?: number } | undefined
+  let confidence = 0.7
+
+  if (mainReading?.probability_score) {
+    // Use the main reading probability if available (0-1 or 0-100)
+    confidence = mainReading.probability_score > 1
+      ? mainReading.probability_score / 100
+      : mainReading.probability_score
+  } else if (scores) {
+    const values = Object.values(scores)
+    const avg = values.reduce((a, b) => a + b, 0) / values.length
+    // Scores are on 0-10 scale → divide by 10 to get 0-1
+    confidence = avg > 1 ? avg / 10 : avg
+  }
+
+  // Clamp between 0.1 and 0.95
+  confidence = Math.max(0.1, Math.min(0.95, confidence))
 
   await db.prepare(
     `UPDATE analyses SET status = 'completed', ai_result_json = ?, confidence_score = ?, updated_at = ? WHERE id = ?`

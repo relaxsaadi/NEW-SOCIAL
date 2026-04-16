@@ -1056,14 +1056,24 @@ ${HEAD('Résultat')}
 </html>`
   }
 
-  const scores = (result.scores as Record<string, number>) || {}
+  const rawScores = (result.scores as Record<string, number>) || {}
+  // Normalize scores: LLM may return 0-10 or 0-100, we need 0-100 for display
+  const scores: Record<string, number> = {}
+  for (const [key, val] of Object.entries(rawScores)) {
+    scores[key] = val <= 10 ? Math.round(val * 10) : Math.round(val)
+  }
   const mainReading = result.main_reading as { title: string; description: string; probability_score: number } | undefined
   const alternativeReadings = (result.alternative_readings as Array<{ title: string; description: string; probability_score: number }>) || []
   const observableSignals = (result.observable_signals as Array<{ signal: string; type: string; interpretation: string }>) || []
   const bestNextAction = result.best_next_action as { action: string; rationale: string } | undefined
   const replyOptions = (result.reply_options as Array<{ style: string; text: string; why_it_works: string }>) || []
   const uncertainties = (result.uncertainties as string[]) || []
-  const confidence = analysis.confidence_score ? Math.round(analysis.confidence_score * 100) : (mainReading?.probability_score || 75)
+  // Confidence: use DB value (already normalized to 0-1), or fallback to main_reading probability
+  const confidence = analysis.confidence_score
+    ? Math.round(analysis.confidence_score * 100)
+    : mainReading?.probability_score
+      ? (mainReading.probability_score > 1 ? Math.round(mainReading.probability_score) : Math.round(mainReading.probability_score * 100))
+      : 75
 
   const scoreColors: Record<string, string> = {
     interest: 'violet',
@@ -1166,7 +1176,7 @@ ${HEAD('Votre analyse — Rapport complet')}
       <div class="bg-[#0f0a1a] rounded-2xl p-6">
         <div class="flex items-center justify-between mb-3">
           <div class="text-violet-400 text-xs font-mono uppercase tracking-wider">Lecture principale</div>
-          <div class="bg-violet-900/50 border border-violet-700/30 font-mono text-violet-300 text-sm font-bold px-3 py-1 rounded-full">${mainReading.probability_score}% probabilité</div>
+          <div class="bg-violet-900/50 border border-violet-700/30 font-mono text-violet-300 text-sm font-bold px-3 py-1 rounded-full">${mainReading.probability_score > 1 ? Math.round(mainReading.probability_score) : Math.round(mainReading.probability_score * 100)}% probabilité</div>
         </div>
         <h3 class="text-2xl font-black text-white mb-3">${escapeHtml(mainReading.title)}</h3>
         <p class="text-gray-300 leading-relaxed">${escapeHtml(mainReading.description)}</p>
@@ -1180,7 +1190,7 @@ ${HEAD('Votre analyse — Rapport complet')}
       <div class="space-y-3">
         ${alternativeReadings.map(r => `
         <div class="flex items-start gap-4 bg-gray-900/50 border border-gray-800 rounded-xl p-4">
-          <div class="font-mono text-xs text-gray-500 bg-gray-800 rounded-lg px-2 py-1 flex-shrink-0 mt-0.5">${r.probability_score}%</div>
+          <div class="font-mono text-xs text-gray-500 bg-gray-800 rounded-lg px-2 py-1 flex-shrink-0 mt-0.5">${r.probability_score > 1 ? Math.round(r.probability_score) : Math.round(r.probability_score * 100)}%</div>
           <div>
             <h4 class="font-semibold text-white text-sm mb-1">${escapeHtml(r.title)}</h4>
             <p class="text-gray-400 text-xs leading-relaxed">${escapeHtml(r.description)}</p>

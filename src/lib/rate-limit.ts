@@ -6,19 +6,19 @@ interface RateLimitEntry {
   resetAt: number
 }
 
-// In-memory store (per Worker isolate). For multi-region production,
-// replace with KV-based storage.
+// In-memory store (per Worker isolate).
 const store = new Map<string, RateLimitEntry>()
+let lastCleanup = 0
 
-// Clean up expired entries periodically
+// Lazy cleanup: runs during request handling, not via setInterval
 function cleanup() {
   const now = Date.now()
+  if (now - lastCleanup < 60_000) return
+  lastCleanup = now
   for (const [key, entry] of store) {
     if (now > entry.resetAt) store.delete(key)
   }
 }
-
-setInterval(cleanup, 60_000)
 
 /**
  * Rate limiting middleware for Cloudflare Workers.
@@ -28,6 +28,8 @@ setInterval(cleanup, 60_000)
  */
 export function rateLimit(maxRequests: number, windowMs: number, keyPrefix = 'global') {
   return async (c: Context<{ Bindings: Bindings }>, next: Next) => {
+    cleanup()
+
     const ip = c.req.header('cf-connecting-ip')
       || c.req.header('x-forwarded-for')?.split(',')[0]?.trim()
       || 'unknown'
