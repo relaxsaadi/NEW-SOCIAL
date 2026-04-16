@@ -6,6 +6,7 @@ import { serveStatic } from 'hono/cloudflare-workers'
 import type { Bindings } from './lib/types'
 import { now, ulid, logEvent } from './lib/db'
 import { rateLimit } from './lib/rate-limit'
+import { ghlLeadCaptured } from './lib/ghl'
 import checkout from './routes/checkout'
 import analyze from './routes/analyze'
 import admin from './routes/admin'
@@ -61,6 +62,7 @@ app.post('/api/leads', async (c) => {
   ).bind(id, email, source ?? 'landing', now()).run()
 
   await logEvent(c.env.DB, 'lead_captured', { payload: { source } })
+  c.executionCtx?.waitUntil(ghlLeadCaptured(email, source ?? 'landing'))
   return c.json({ success: true })
 })
 

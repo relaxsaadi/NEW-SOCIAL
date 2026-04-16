@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import type { Bindings, AnalysisMode, ContextType, OfferType } from '../lib/types'
 import { ulid, now, logEvent } from '../lib/db'
 import { callLLM, isSafetyBlock } from '../lib/llm'
+import { ghlAnalysisCompleted, ghlAnalysisFailed, ghlUpsellPurchased } from '../lib/ghl'
 
 const analyze = new Hono<{ Bindings: Bindings }>()
 
@@ -114,6 +115,7 @@ async function runAnalysis(
           `UPDATE analyses SET status = 'failed', updated_at = ? WHERE id = ?`
         ).bind(ts, analysisId).run()
         await logEvent(db, 'analysis_failed', { analysis_id: analysisId, payload: { error: String(e) } })
+        ghlAnalysisFailed(undefined, analysisId).catch(() => {})
         return
       }
     }
@@ -158,6 +160,12 @@ async function runAnalysis(
   ).bind(JSON.stringify(result), confidence, ts, analysisId).run()
 
   await logEvent(db, 'analysis_generated', { analysis_id: analysisId })
+
+  // Send to GHL
+  const user = await db.prepare(
+    `SELECT u.email FROM analyses a LEFT JOIN users u ON a.user_id = u.id WHERE a.id = ?`
+  ).bind(analysisId).first<{ email: string | null }>()
+  ghlAnalysisCompleted(user?.email || undefined, input.offerType, confidence).catch(() => {})
 }
 
 // GET /api/result/:id
@@ -312,6 +320,7 @@ analyze.post('/api/webhooks/upsell-paid', async (c) => {
     `UPDATE upsells SET status = 'purchased', updated_at = ? WHERE id = ?`
   ).bind(ts, upsellId).run()
 
+  c.executionCtx?.waitUntil(ghlUpsellPurchased(undefined, upsellId))
   return c.json({ success: true })
 })
 

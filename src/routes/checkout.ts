@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import type { Bindings, OfferType } from '../lib/types'
 import { OFFER_PRICES } from '../lib/types'
 import { ulid, now, getOrCreateUser, logEvent } from '../lib/db'
+import { ghlCheckoutStarted, ghlPaymentSuccess } from '../lib/ghl'
 
 const checkout = new Hono<{ Bindings: Bindings }>()
 
@@ -103,6 +104,7 @@ checkout.post('/api/create-checkout-session', async (c) => {
     ).bind(paymentId, analysisId, session.id, offer.cents, offerType, ts, ts).run()
 
     await logEvent(c.env.DB, 'checkout_start', { analysis_id: analysisId, payload: { offerType } })
+    c.executionCtx?.waitUntil(ghlCheckoutStarted(email, offerType))
 
     return c.json({ checkoutUrl: session.url, analysisId })
   } catch (e) {
@@ -176,6 +178,15 @@ checkout.post('/api/webhooks/stripe', async (c) => {
       user_id: userId ?? undefined,
       payload: { stripe_event_id: event.id },
     })
+
+    // Send to GHL — tag as client with offer type
+    const offerType = session.metadata?.offerType || 'unknown'
+    const paymentRow = await c.env.DB.prepare(
+      `SELECT amount_cents FROM payments WHERE stripe_session_id = ?`
+    ).bind(session.id).first<{ amount_cents: number }>()
+    c.executionCtx?.waitUntil(
+      ghlPaymentSuccess(session.customer_email || '', offerType, paymentRow?.amount_cents || 0)
+    )
   } else if (event.type === 'payment_intent.payment_failed') {
     const pi = event.data.object as { id: string }
     await c.env.DB.prepare(
