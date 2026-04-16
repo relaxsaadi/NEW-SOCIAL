@@ -217,45 +217,45 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
     <div class="bg-[#111] border border-violet-500/30 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl shadow-violet-900/50 relative">
       <button onclick="document.getElementById('exit-popup').classList.add('hidden'); document.getElementById('exit-popup').classList.remove('flex')" class="absolute top-4 right-4 text-gray-500 hover:text-white text-lg cursor-pointer">✕</button>
       <div class="text-4xl mb-3">⚠️</div>
-      <h2 class="text-2xl font-black text-white mb-2">Attendez — avant de partir</h2>
-      <p class="text-gray-400 text-sm mb-5">La personne qui vous a envoyé ce message <strong class="text-white">ne vous attend pas</strong>. Chaque heure d'hésitation est une opportunité perdue.</p>
+      <h2 class="text-xl sm:text-2xl font-black text-white mb-2">Wait — before you go</h2>
+      <p class="text-gray-400 text-sm mb-5">The person who sent you that message <strong class="text-white">isn't waiting for you</strong>. Every hour of hesitation is a missed opportunity.</p>
       <div class="bg-violet-900/30 border border-violet-700/30 rounded-xl p-4 mb-5">
-        <div class="text-gray-400 text-xs mb-1">Offre valable encore</div>
+        <div class="text-gray-400 text-xs mb-1">Offer expires in</div>
         <div id="exit-countdown" class="font-mono text-3xl font-black text-violet-400">10:00</div>
       </div>
       <a href="#pricing" onclick="document.getElementById('exit-popup').classList.add('hidden'); document.getElementById('exit-popup').classList.remove('flex')"
         class="block w-full bg-violet-600 hover:bg-violet-500 text-white py-4 rounded-xl font-black transition-colors">
-        Obtenir ma clarté maintenant — dès 19€ →
+        Get my clarity now — from €19 →
       </a>
-      <p class="text-gray-600 text-xs mt-3">Satisfait ou remboursé · Résultat en 30 secondes</p>
+      <p class="text-gray-600 text-xs mt-3">Money-back guarantee · Result in 30 seconds</p>
     </div>
   </div>
 
   <!-- Scarcity Bar (top, fixed) -->
-  <div id="scarcity-bar" class="fixed top-0 w-full z-[51] bg-gradient-to-r from-violet-900/80 to-blue-900/80 border-b border-violet-700/30 py-2 px-4 text-center text-sm">
-    <div class="flex items-center justify-center gap-3 flex-wrap">
-      <span class="text-amber-300 font-semibold"><i class="fas fa-fire text-amber-400 mr-1"></i>🔥 Offre limitée</span>
-      <span class="text-gray-300">Prix Early Access — augmentation prévue fin du mois</span>
-      <span id="scarcity-counter" class="bg-amber-900/50 border border-amber-700/30 text-amber-300 px-3 py-0.5 rounded-full text-xs font-bold">
-        <i class="fas fa-users mr-1"></i><span id="live-count">47</span> personnes consultent en ce moment
+  <div id="scarcity-bar" class="fixed top-0 w-full z-[51] bg-gradient-to-r from-violet-900/80 to-blue-900/80 border-b border-violet-700/30 py-1.5 sm:py-2 px-3 sm:px-4 text-center text-xs sm:text-sm">
+    <div class="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
+      <span class="text-amber-300 font-semibold"><i class="fas fa-fire text-amber-400 mr-1"></i>Limited offer</span>
+      <span class="text-gray-300 hidden sm:inline">Early Access pricing — increase coming soon</span>
+      <span id="scarcity-counter" class="bg-amber-900/50 border border-amber-700/30 text-amber-300 px-2 sm:px-3 py-0.5 rounded-full text-xs font-bold">
+        <i class="fas fa-users mr-1"></i><span id="live-count">47</span> people online now
       </span>
     </div>
   </div>
 
   <!-- Sticky Nav (below scarcity bar) -->
-  <nav class="fixed top-[36px] w-full z-50 bg-[#0a0a0a]/95 backdrop-blur border-b border-white/5">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+  <nav class="fixed top-[30px] sm:top-[36px] w-full z-50 bg-[#0a0a0a]/95 backdrop-blur border-b border-white/5">
+    <div class="max-w-6xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <img src="/static/logo-192.png" alt="Signal Decoder" class="w-8 h-8 rounded-lg">
-        <span class="font-bold text-white">Signal Decoder</span>
+        <img src="/static/logo-192.png" alt="Signal Decoder" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg">
+        <span class="font-bold text-white text-sm sm:text-base">Signal Decoder</span>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 sm:gap-3">
         <div class="hidden sm:flex items-center gap-1 text-xs text-gray-400">
           <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span id="nav-count">47 en ligne</span>
+          <span id="nav-count">47 online</span>
         </div>
-        <a href="#pricing" class="bg-violet-600 hover:bg-violet-500 text-white px-5 py-2 rounded-lg text-sm font-semibold transition-colors pulse-glow">
-          Décoder maintenant →
+        <a href="#pricing" class="bg-violet-600 hover:bg-violet-500 text-white px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors pulse-glow">
+          Decode now →
         </a>
       </div>
     </div>
@@ -264,50 +264,50 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
   <!-- ═══════════════════════════════════════════════════════
        HERO — Dream Outcome + Specific Problem
   ═══════════════════════════════════════════════════════ -->
-  <section class="pt-44 pb-12 px-4">
+  <section class="pt-28 sm:pt-44 pb-8 sm:pb-12 px-4">
     <div class="max-w-4xl mx-auto text-center">
 
       <!-- Social proof bar (top) — authority + specificity -->
-      <div class="inline-flex items-center gap-2 bg-amber-900/20 border border-amber-700/30 text-amber-300 px-4 py-2 rounded-full text-sm mb-8 font-medium">
+      <div class="inline-flex items-center gap-1.5 sm:gap-2 bg-amber-900/20 border border-amber-700/30 text-amber-300 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm mb-6 sm:mb-8 font-medium">
         <i class="fas fa-fire text-amber-400 text-xs"></i>
-        <span id="hero-count">+2 847</span> analyses livrées ce mois · Noté <strong>4.9/5</strong> · 94% taux de satisfaction
+        <span><span id="hero-count">+2,847</span> decoded · <strong>4.9/5</strong> · 94% satisfaction</span>
       </div>
 
-      <!-- Headline — Specific pain + Dream outcome (Hormozi: be so specific it stings) -->
-      <h1 class="text-4xl sm:text-5xl md:text-6xl font-black leading-[1.1] mb-6 tracking-tight fade-in-up">
-        Arrêtez de vous torturer<br>
-        sur ce que ce message<br>
-        <span class="gradient-text">veut vraiment dire.</span>
+      <!-- Headline -->
+      <h1 class="text-3xl sm:text-5xl md:text-6xl font-black leading-[1.1] mb-5 sm:mb-6 tracking-tight fade-in-up">
+        Stop overthinking<br>
+        what that message<br>
+        <span class="gradient-text">really means.</span>
       </h1>
 
-      <!-- Sub-headline — Who it's for + specific result -->
-      <p class="text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto mb-4 leading-relaxed">
-        Notre IA analyse votre message en <strong class="text-white">moins de 30 secondes</strong> et vous dit exactement
-        ce que la personne ressent, ce qu'elle veut, et <strong class="text-white">quelle réponse envoyer.</strong>
+      <!-- Sub-headline -->
+      <p class="text-base sm:text-xl text-gray-300 max-w-2xl mx-auto mb-3 sm:mb-4 leading-relaxed px-2">
+        Our AI decodes their message in <strong class="text-white">under 30 seconds</strong> and tells you exactly
+        what they feel, what they want, and <strong class="text-white">what to reply.</strong>
       </p>
-      <p class="text-gray-500 text-sm mb-10">Sans compte. Sans abonnement. Résultat immédiat. Garanti.</p>
+      <p class="text-gray-500 text-xs sm:text-sm mb-8 sm:mb-10">No account. No subscription. Instant results. Guaranteed.</p>
 
-      <!-- Primary CTA — Hormozi: make the CTA a no-brainer -->
-      <div class="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+      <!-- Primary CTA -->
+      <div class="flex flex-col sm:flex-row gap-4 justify-center mb-5 sm:mb-6 px-2">
         <a href="#pricing"
-          class="bg-violet-600 hover:bg-violet-500 text-white px-10 py-5 rounded-2xl text-xl font-black transition-all pulse-glow shadow-2xl shadow-violet-900/50 group">
-          Décoder mon message maintenant
+          class="bg-violet-600 hover:bg-violet-500 text-white px-8 sm:px-10 py-4 sm:py-5 rounded-2xl text-lg sm:text-xl font-black transition-all pulse-glow shadow-2xl shadow-violet-900/50 group">
+          Decode my message now
           <span class="ml-2 group-hover:translate-x-1 inline-block transition-transform">→</span>
         </a>
       </div>
 
       <!-- Micro-copy trust signals -->
-      <div class="flex flex-wrap justify-center gap-x-6 gap-y-1 text-xs text-gray-500 mb-4">
-        <span><i class="fas fa-lock text-green-500 mr-1"></i>Paiement sécurisé Stripe</span>
-        <span><i class="fas fa-bolt text-amber-400 mr-1"></i>Résultat en &lt; 30 secondes</span>
-        <span><i class="fas fa-shield-alt text-blue-400 mr-1"></i>100% confidentiel</span>
-        <span><i class="fas fa-undo text-violet-400 mr-1"></i>Satisfait ou remboursé</span>
+      <div class="grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-x-4 sm:gap-x-6 gap-y-2 sm:gap-y-1 text-xs text-gray-500 mb-4 px-4">
+        <span><i class="fas fa-lock text-green-500 mr-1"></i>Secure payment</span>
+        <span><i class="fas fa-bolt text-amber-400 mr-1"></i>Result in &lt; 30s</span>
+        <span><i class="fas fa-shield-alt text-blue-400 mr-1"></i>100% confidential</span>
+        <span><i class="fas fa-undo text-violet-400 mr-1"></i>Money-back guarantee</span>
       </div>
 
-      <!-- Hormozi: Show the math — dream outcome vs time investment -->
-      <div class="inline-flex items-center gap-2 bg-gray-900/60 border border-gray-800 rounded-xl px-4 py-2 text-xs text-gray-400 mt-2">
+      <!-- Value comparison -->
+      <div class="inline-flex items-center gap-2 bg-gray-900/60 border border-gray-800 rounded-xl px-3 sm:px-4 py-2 text-xs text-gray-400 mt-2">
         <i class="fas fa-calculator text-violet-400"></i>
-        <span>29€ = &lt; 5 min de votre temps · vs. des heures de rumination. Le calcul est simple.</span>
+        <span>€29 = 5 min of clarity · vs. hours of overthinking.</span>
       </div>
     </div>
   </section>
@@ -317,25 +317,25 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
   ═══════════════════════════════════════════════════════ -->
   <section class="px-4 py-16 border-t border-white/5">
     <div class="max-w-3xl mx-auto">
-      <h2 class="text-2xl sm:text-3xl font-black text-white text-center mb-10">
-        Vous vous reconnaissez dans l'une de ces situations ?
+      <h2 class="text-xl sm:text-3xl font-black text-white text-center mb-6 sm:mb-10">
+        Does this sound familiar?
       </h2>
-      <div class="space-y-3">
+      <div class="space-y-2.5 sm:space-y-3">
         ${[
-          { icon: 'fa-comment-slash', text: 'Il/elle met des heures (ou des jours) à répondre, et vous ne savez plus si vous êtes prioritaire ou non.' },
-          { icon: 'fa-question-circle', text: 'Un message froid ou sec arrive, et vous passez 2h à l\'analyser avec vos amis sans trouver de réponse claire.' },
-          { icon: 'fa-heart-broken', text: 'Vous sentez que quelque chose a changé mais impossible de mettre le doigt dessus — et vous avez peur de vous tromper.' },
-          { icon: 'fa-briefcase', text: 'Un email professionnel ambigu de votre manager ou client vous stresse — trop froid ? Trop court ? Sous-entendu négatif ?' },
-          { icon: 'fa-user-slash', text: 'Vous vous demandez si vous sur-analysez ou si votre instinct a raison — et personne autour de vous n\'est objectif.' },
+          { icon: 'fa-comment-slash', text: 'They take hours (or days) to reply, and you can\'t tell if you\'re a priority or an afterthought.' },
+          { icon: 'fa-question-circle', text: 'A cold or short message arrives, and you spend hours analyzing it with friends — still no clear answer.' },
+          { icon: 'fa-heart-broken', text: 'Something shifted but you can\'t pinpoint what — and you\'re afraid of misreading the situation.' },
+          { icon: 'fa-briefcase', text: 'An ambiguous work email from your boss or client stresses you out — too cold? Too brief? Hidden meaning?' },
+          { icon: 'fa-user-slash', text: 'You wonder if you\'re overthinking or if your gut is right — and nobody around you is objective.' },
         ].map(p => `
-        <div class="flex items-start gap-4 bg-gray-900/60 border border-gray-800 rounded-2xl p-4">
-          <div class="w-10 h-10 bg-red-900/40 border border-red-800/30 rounded-xl flex items-center justify-center flex-shrink-0">
-            <i class="fas ${p.icon} text-red-400 text-sm"></i>
+        <div class="flex items-start gap-3 sm:gap-4 bg-gray-900/60 border border-gray-800 rounded-xl sm:rounded-2xl p-3 sm:p-4">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 bg-red-900/40 border border-red-800/30 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+            <i class="fas ${p.icon} text-red-400 text-xs sm:text-sm"></i>
           </div>
-          <p class="text-gray-300 text-sm leading-relaxed pt-1.5">${p.text}</p>
+          <p class="text-gray-300 text-xs sm:text-sm leading-relaxed pt-1">${p.text}</p>
         </div>`).join('')}
       </div>
-      <p class="text-center text-violet-400 font-bold mt-8 text-lg">Si vous avez coché au moins une case — cette page est faite pour vous.</p>
+      <p class="text-center text-violet-400 font-bold mt-6 sm:mt-8 text-sm sm:text-lg">If you checked even one — this page is for you.</p>
     </div>
   </section>
 
@@ -345,8 +345,8 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
   <section class="px-4 py-16 border-t border-white/5">
     <div class="max-w-2xl mx-auto">
       <div class="text-center mb-8">
-        <div class="inline-block bg-violet-900/30 border border-violet-700/30 text-violet-300 text-xs px-3 py-1 rounded-full mb-3">EXEMPLE RÉEL</div>
-        <h2 class="text-2xl font-black text-white">Voici ce que vous obtenez en 30 secondes</h2>
+        <div class="inline-block bg-violet-900/30 border border-violet-700/30 text-violet-300 text-xs px-3 py-1 rounded-full mb-3">REAL EXAMPLE</div>
+        <h2 class="text-xl sm:text-2xl font-black text-white">Here's what you get in 30 seconds</h2>
       </div>
       <div class="glass-card rounded-2xl p-6 border border-violet-500/20">
         <!-- Input -->
