@@ -178,8 +178,15 @@ const HEAD = (title: string) => `
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title} — Social Signal Translator</title>
-  <meta name="description" content="Décodez ce que les gens veulent vraiment dire. IA d'analyse des signaux sociaux.">
+  <title>${title} — Signal Decoder</title>
+  <meta name="description" content="Decode the hidden signals in their messages. Our AI reveals what they really mean — in 30 seconds.">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+  <meta property="og:title" content="${title} — Signal Decoder">
+  <meta property="og:description" content="Decode the hidden signals in their messages. Our AI reveals what they really mean — in 30 seconds.">
+  <meta property="og:image" content="/static/logo-512.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
@@ -224,8 +231,8 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
     </div>
   </div>
 
-  <!-- Scarcity Bar (top) -->
-  <div id="scarcity-bar" class="bg-gradient-to-r from-violet-900/80 to-blue-900/80 border-b border-violet-700/30 py-2 px-4 text-center text-sm">
+  <!-- Scarcity Bar (top, fixed) -->
+  <div id="scarcity-bar" class="fixed top-0 w-full z-[51] bg-gradient-to-r from-violet-900/80 to-blue-900/80 border-b border-violet-700/30 py-2 px-4 text-center text-sm">
     <div class="flex items-center justify-center gap-3 flex-wrap">
       <span class="text-amber-300 font-semibold"><i class="fas fa-fire text-amber-400 mr-1"></i>🔥 Offre limitée</span>
       <span class="text-gray-300">Prix Early Access — augmentation prévue fin du mois</span>
@@ -235,14 +242,12 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
     </div>
   </div>
 
-  <!-- Sticky Nav -->
-  <nav class="fixed top-0 w-full z-50 bg-[#0a0a0a]/95 backdrop-blur border-b border-white/5" style="top: 0">
+  <!-- Sticky Nav (below scarcity bar) -->
+  <nav class="fixed top-[36px] w-full z-50 bg-[#0a0a0a]/95 backdrop-blur border-b border-white/5">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center">
-          <i class="fas fa-brain text-white text-xs"></i>
-        </div>
-        <span class="font-bold text-white">Social Signal Translator</span>
+        <img src="/static/logo-192.png" alt="Signal Decoder" class="w-8 h-8 rounded-lg">
+        <span class="font-bold text-white">Signal Decoder</span>
       </div>
       <div class="flex items-center gap-3">
         <div class="hidden sm:flex items-center gap-1 text-xs text-gray-400">
@@ -259,7 +264,7 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
   <!-- ═══════════════════════════════════════════════════════
        HERO — Dream Outcome + Specific Problem
   ═══════════════════════════════════════════════════════ -->
-  <section class="pt-36 pb-12 px-4">
+  <section class="pt-44 pb-12 px-4">
     <div class="max-w-4xl mx-auto text-center">
 
       <!-- Social proof bar (top) — authority + specificity -->
@@ -749,10 +754,8 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
   <footer class="border-t border-white/5 px-6 py-8">
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
       <div class="flex items-center gap-2">
-        <div class="w-6 h-6 bg-violet-600 rounded flex items-center justify-center">
-          <i class="fas fa-brain text-white text-xs"></i>
-        </div>
-        <span>Social Signal Translator © 2026 — Strategixs</span>
+        <img src="/static/logo-192.png" alt="Signal Decoder" class="w-6 h-6 rounded">
+        <span>Signal Decoder © 2026 — Strategixs SAS</span>
       </div>
       <div class="flex items-center gap-6">
         <a href="/privacy" class="hover:text-gray-400 transition-colors">Confidentialité</a>
@@ -988,7 +991,7 @@ ${HEAD('Analyse en cours')}
       <div class="w-32 h-32 border-2 border-violet-800 rounded-xl overflow-hidden relative">
         <div class="scan-line"></div>
         <div class="absolute inset-0 flex items-center justify-center">
-          <i class="fas fa-brain text-5xl text-violet-600/50"></i>
+          <img src="/static/logo-192.png" alt="Signal Decoder" class="w-16 h-16 opacity-50">
         </div>
       </div>
     </div>
@@ -1580,7 +1583,7 @@ function termsContent(): string {
   <p><strong>Dernière mise à jour :</strong> 16 avril 2026</p>
 
   <h2 class="text-xl font-bold text-white mt-6">1. Mentions légales</h2>
-  <p>Le service Social Signal Translator est édité par :</p>
+  <p>Le service Signal Decoder est édité par :</p>
   <ul class="list-disc pl-5 space-y-1">
     <li><strong>Éditeur :</strong> Strategixs — Société par actions simplifiée (SAS)</li>
     <li><strong>Adresse :</strong> 50 Avenue des Champs Élysées, 75008 Paris, France</li>
@@ -1591,7 +1594,7 @@ function termsContent(): string {
   </ul>
 
   <h2 class="text-xl font-bold text-white mt-6">2. Objet du service</h2>
-  <p>Social Signal Translator est un outil d'analyse assistée par intelligence artificielle. Il propose une <strong>interprétation probabiliste</strong> de messages et de situations sociales soumis par l'utilisateur.</p>
+  <p>Signal Decoder est un outil d'analyse assistée par intelligence artificielle. Il propose une <strong>interprétation probabiliste</strong> de messages et de situations sociales soumis par l'utilisateur.</p>
   <p class="mt-2"><strong>Le service ne constitue en aucun cas :</strong></p>
   <ul class="list-disc pl-5 space-y-1">
     <li>Un avis médical, psychologique ou psychiatrique.</li>
@@ -1643,7 +1646,7 @@ function termsContent(): string {
   <p class="mt-2">Toute utilisation abusive entraînera le blocage de l'analyse sans remboursement et pourra donner lieu à un signalement aux autorités compétentes.</p>
 
   <h2 class="text-xl font-bold text-white mt-6">9. Limitation de responsabilité</h2>
-  <p>Social Signal Translator fournit des analyses <strong>probabilistes générées par intelligence artificielle</strong>. En conséquence :</p>
+  <p>Signal Decoder fournit des analyses <strong>probabilistes générées par intelligence artificielle</strong>. En conséquence :</p>
   <ul class="list-disc pl-5 space-y-1">
     <li>Les résultats ne sont pas garantis comme exacts, complets ou adaptés à votre situation spécifique.</li>
     <li>Strategixs ne peut être tenu responsable des décisions prises par l'utilisateur sur la base des analyses.</li>

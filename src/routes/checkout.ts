@@ -64,7 +64,7 @@ checkout.post('/api/create-checkout-session', async (c) => {
             unit_amount: offer.cents,
             product_data: {
               name: offer.description,
-              description: `Social Signal Translator — ${offer.description}`,
+              description: `Signal Decoder — ${offer.description}`,
             },
           },
           quantity: 1,

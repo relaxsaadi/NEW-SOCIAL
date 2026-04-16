@@ -78,7 +78,7 @@ admin.get('/admin/dashboard', async (c) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — Social Signal Translator</title>
+  <title>Admin — Signal Decoder</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-950 text-gray-100 min-h-screen">
