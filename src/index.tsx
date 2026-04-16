@@ -1456,29 +1456,210 @@ ${HEAD(title)}
 
 function privacyContent(): string {
   return `
-  <p><strong>Dernière mise à jour :</strong> Avril 2026</p>
-  <h2 class="text-xl font-bold text-white mt-6">1. Données collectées</h2>
-  <p>Nous collectons uniquement votre email (via Stripe) et les textes que vous soumettez pour analyse. Aucun compte utilisateur n'est créé.</p>
-  <h2 class="text-xl font-bold text-white mt-6">2. Utilisation des données</h2>
-  <p>Les textes soumis sont utilisés uniquement pour générer votre analyse via notre IA. Ils sont automatiquement supprimés après 30 jours.</p>
-  <h2 class="text-xl font-bold text-white mt-6">3. Partage des données</h2>
-  <p>Vos données ne sont jamais vendues. Elles sont partagées uniquement avec Stripe (paiement) et notre fournisseur IA pour traitement.</p>
-  <h2 class="text-xl font-bold text-white mt-6">4. Vos droits RGPD</h2>
-  <p>Vous disposez d'un droit d'accès, de rectification et de suppression de vos données. Contactez-nous pour exercer ces droits.</p>
+  <p><strong>Dernière mise à jour :</strong> 16 avril 2026</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">1. Responsable du traitement</h2>
+  <p>Le responsable du traitement des données est :</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li><strong>Nom :</strong> Strategix</li>
+    <li><strong>Email :</strong> contact@strategix.net</li>
+    <li><strong>Site :</strong> https://webapp-8sl.pages.dev</li>
+  </ul>
+  <p class="mt-2">Pour toute question relative à vos données personnelles, contactez-nous à l'adresse ci-dessus.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">2. Données collectées</h2>
+  <p>Nous collectons les données suivantes :</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li><strong>Email :</strong> collecté via Stripe lors du paiement, ou via le formulaire de capture (newsletter).</li>
+    <li><strong>Textes soumis :</strong> le message ou la situation que vous soumettez pour analyse.</li>
+    <li><strong>Contexte d'analyse :</strong> type de relation, mode d'analyse, contexte supplémentaire fourni volontairement.</li>
+    <li><strong>Données de paiement :</strong> traitées exclusivement par Stripe (nous ne stockons ni numéro de carte ni données bancaires).</li>
+    <li><strong>Données techniques :</strong> adresse IP, user-agent, horodatage des requêtes (collectées automatiquement pour la sécurité du service).</li>
+  </ul>
+  <p class="mt-2">Aucun compte utilisateur n'est créé. Nous ne collectons pas de nom, prénom, adresse postale ni numéro de téléphone.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">3. Base légale du traitement</h2>
+  <p>Le traitement de vos données repose sur les bases légales suivantes (RGPD Art. 6) :</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li><strong>Exécution du contrat :</strong> traitement de votre commande, génération de l'analyse, gestion du paiement.</li>
+    <li><strong>Consentement :</strong> inscription à la newsletter, capture d'email volontaire.</li>
+    <li><strong>Intérêt légitime :</strong> sécurité du service, prévention des fraudes, logs techniques.</li>
+  </ul>
+
+  <h2 class="text-xl font-bold text-white mt-6">4. Finalité du traitement</h2>
+  <p>Vos données sont utilisées exclusivement pour :</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li>Générer votre analyse personnalisée via notre moteur IA.</li>
+    <li>Traiter et confirmer votre paiement.</li>
+    <li>Vous recontacter en cas de problème technique lié à votre commande.</li>
+    <li>Améliorer la qualité du service (données anonymisées et agrégées uniquement).</li>
+  </ul>
+  <p class="mt-2">Vos textes ne sont <strong>jamais</strong> utilisés pour entraîner des modèles d'IA.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">5. Sous-traitants et partage des données</h2>
+  <p>Vos données sont partagées avec les prestataires suivants, strictement nécessaires au fonctionnement du service :</p>
+  <table class="w-full text-sm mt-2 border border-gray-700">
+    <thead><tr class="bg-gray-800"><th class="px-3 py-2 text-left">Prestataire</th><th class="px-3 py-2 text-left">Rôle</th><th class="px-3 py-2 text-left">Localisation</th></tr></thead>
+    <tbody>
+      <tr class="border-t border-gray-700"><td class="px-3 py-2">Stripe, Inc.</td><td class="px-3 py-2">Traitement des paiements</td><td class="px-3 py-2">USA (certifié DPF)</td></tr>
+      <tr class="border-t border-gray-700"><td class="px-3 py-2">OpenAI, Inc.</td><td class="px-3 py-2">Génération d'analyse IA</td><td class="px-3 py-2">USA (certifié DPF)</td></tr>
+      <tr class="border-t border-gray-700"><td class="px-3 py-2">Cloudflare, Inc.</td><td class="px-3 py-2">Hébergement, CDN, base de données</td><td class="px-3 py-2">Global (certifié DPF)</td></tr>
+    </tbody>
+  </table>
+  <p class="mt-2">Vos données ne sont <strong>jamais vendues</strong> à des tiers. Aucune donnée n'est partagée à des fins publicitaires.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">6. Transferts hors Union européenne</h2>
+  <p>Certains de nos prestataires sont basés aux États-Unis. Ces transferts sont encadrés par :</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li>Le <strong>EU-U.S. Data Privacy Framework (DPF)</strong> pour Stripe, OpenAI et Cloudflare.</li>
+    <li>Des <strong>clauses contractuelles types (SCCs)</strong> de la Commission européenne lorsque le DPF ne s'applique pas.</li>
+  </ul>
+  <p class="mt-2">Conformément à l'article 46 du RGPD, des garanties appropriées sont en place pour protéger vos données.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">7. Durée de conservation</h2>
+  <ul class="list-disc pl-5 space-y-1">
+    <li><strong>Textes soumis et analyses :</strong> 90 jours, puis suppression automatique.</li>
+    <li><strong>Email :</strong> conservé tant que nécessaire à la relation commerciale, maximum 3 ans après le dernier achat.</li>
+    <li><strong>Données de paiement :</strong> conservées par Stripe selon leur propre politique (obligations légales comptables).</li>
+    <li><strong>Logs techniques :</strong> 30 jours maximum.</li>
+    <li><strong>Newsletter :</strong> jusqu'à désinscription.</li>
+  </ul>
+
+  <h2 class="text-xl font-bold text-white mt-6">8. Cookies et technologies de suivi</h2>
+  <p>Ce site utilise des cookies strictement nécessaires au fonctionnement du service :</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li><strong>Session technique :</strong> maintien de votre session de navigation (aucun cookie de tracking).</li>
+    <li><strong>Cloudflare :</strong> cookies de sécurité et de performance (cf-bm, __cflb).</li>
+  </ul>
+  <p class="mt-2">Nous n'utilisons <strong>aucun cookie publicitaire, analytique ou de profilage</strong>. Aucun outil de tracking tiers (Google Analytics, Facebook Pixel, etc.) n'est installé.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">9. Vos droits (RGPD)</h2>
+  <p>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez des droits suivants :</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li><strong>Droit d'accès :</strong> obtenir une copie de vos données personnelles.</li>
+    <li><strong>Droit de rectification :</strong> corriger des données inexactes.</li>
+    <li><strong>Droit à l'effacement :</strong> demander la suppression de vos données.</li>
+    <li><strong>Droit à la portabilité :</strong> recevoir vos données dans un format structuré.</li>
+    <li><strong>Droit d'opposition :</strong> vous opposer au traitement de vos données.</li>
+    <li><strong>Droit à la limitation :</strong> restreindre le traitement dans certains cas.</li>
+    <li><strong>Droit de retrait du consentement :</strong> à tout moment, sans affecter la licéité du traitement antérieur.</li>
+  </ul>
+  <p class="mt-3">Pour exercer vos droits, envoyez un email à <strong>contact@strategix.net</strong> avec l'objet "Demande RGPD". Nous répondrons sous 30 jours maximum.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">10. Réclamation</h2>
+  <p>Si vous estimez que le traitement de vos données ne respecte pas la réglementation, vous pouvez introduire une réclamation auprès de la <strong>CNIL</strong> (Commission Nationale de l'Informatique et des Libertés) :</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li>Site : <a href="https://www.cnil.fr" class="text-violet-400 hover:underline" target="_blank" rel="noopener">www.cnil.fr</a></li>
+    <li>Adresse : 3 Place de Fontenoy, TSA 80715, 75334 Paris Cedex 07</li>
+  </ul>
+
+  <h2 class="text-xl font-bold text-white mt-6">11. Sécurité des données</h2>
+  <p>Nous mettons en œuvre les mesures techniques et organisationnelles suivantes :</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li>Chiffrement HTTPS/TLS sur toutes les communications.</li>
+    <li>Base de données chiffrée au repos (Cloudflare D1).</li>
+    <li>Accès restreint aux données (principe du moindre privilège).</li>
+    <li>Protection contre les attaques par force brute (rate limiting).</li>
+    <li>Vérification cryptographique des webhooks de paiement.</li>
+    <li>Aucune donnée bancaire stockée sur nos serveurs.</li>
+  </ul>
+
+  <h2 class="text-xl font-bold text-white mt-6">12. Mineurs</h2>
+  <p>Ce service est destiné aux personnes de <strong>16 ans et plus</strong>. Nous ne collectons pas sciemment de données de mineurs de moins de 16 ans. Si vous êtes parent et pensez que votre enfant a utilisé ce service, contactez-nous pour suppression.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">13. Modifications</h2>
+  <p>Cette politique peut être mise à jour. En cas de modification substantielle, un avis sera affiché sur le site. La date de dernière mise à jour en haut de cette page fait foi.</p>
   `
 }
 
 function termsContent(): string {
   return `
-  <p><strong>Dernière mise à jour :</strong> Avril 2026</p>
-  <h2 class="text-xl font-bold text-white mt-6">1. Service</h2>
-  <p>Social Signal Translator est un outil d'analyse IA probabiliste. Les analyses fournies ne constituent pas un avis médical, psychologique ou juridique.</p>
-  <h2 class="text-xl font-bold text-white mt-6">2. Paiements</h2>
-  <p>Tous les paiements sont traités par Stripe. Les achats sont définitifs sauf dysfonctionnement technique de notre part.</p>
-  <h2 class="text-xl font-bold text-white mt-6">3. Limitations</h2>
-  <p>Les analyses sont probabilistes. Elles ne remplacent pas le jugement humain ni l'avis d'un professionnel de santé mentale.</p>
-  <h2 class="text-xl font-bold text-white mt-6">4. Contenu interdit</h2>
-  <p>Il est interdit d'utiliser ce service pour planifier des actes illégaux, harcelants ou nuisibles à autrui.</p>
+  <p><strong>Dernière mise à jour :</strong> 16 avril 2026</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">1. Mentions légales</h2>
+  <p>Le service Social Signal Translator est édité par :</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li><strong>Éditeur :</strong> Strategix</li>
+    <li><strong>Email :</strong> contact@strategix.net</li>
+    <li><strong>Hébergeur :</strong> Cloudflare, Inc. — 101 Townsend Street, San Francisco, CA 94107, USA — <a href="https://www.cloudflare.com" class="text-violet-400 hover:underline" target="_blank" rel="noopener">www.cloudflare.com</a></li>
+  </ul>
+
+  <h2 class="text-xl font-bold text-white mt-6">2. Objet du service</h2>
+  <p>Social Signal Translator est un outil d'analyse assistée par intelligence artificielle. Il propose une <strong>interprétation probabiliste</strong> de messages et de situations sociales soumis par l'utilisateur.</p>
+  <p class="mt-2"><strong>Le service ne constitue en aucun cas :</strong></p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li>Un avis médical, psychologique ou psychiatrique.</li>
+    <li>Un conseil juridique.</li>
+    <li>Un diagnostic clinique ou une évaluation de santé mentale.</li>
+    <li>Un substitut à une consultation avec un professionnel qualifié.</li>
+  </ul>
+  <p class="mt-2">Les résultats sont fournis à titre informatif et de divertissement. L'utilisateur reste seul responsable des décisions prises sur la base de ces analyses.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">3. Acceptation des conditions</h2>
+  <p>L'utilisation du service implique l'acceptation pleine et entière des présentes Conditions Générales d'Utilisation (CGU). Si vous n'acceptez pas ces conditions, vous ne devez pas utiliser le service.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">4. Accès au service</h2>
+  <p>Le service est accessible en ligne, sans création de compte. L'accès aux analyses est conditionné au paiement préalable via Stripe.</p>
+  <p class="mt-2">Nous nous réservons le droit de suspendre ou interrompre le service temporairement pour maintenance, mise à jour ou cas de force majeure, sans indemnisation.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">5. Tarifs et paiement</h2>
+  <p>Les tarifs sont affichés en euros (€), toutes taxes comprises. Les offres disponibles sont :</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li><strong>Quick Decode :</strong> 19€ — analyse concise d'un message.</li>
+    <li><strong>Deep Read :</strong> 29€ — analyse approfondie avec contexte.</li>
+    <li><strong>Pattern Analysis :</strong> 59€ — analyse de patterns relationnels.</li>
+    <li><strong>Reply Generator (upsell) :</strong> 9€ — 3 suggestions de réponse personnalisées.</li>
+  </ul>
+  <p class="mt-2">Les paiements sont traités de manière sécurisée par <strong>Stripe, Inc.</strong> Nous ne stockons aucune donnée bancaire.</p>
+  <p class="mt-2">Nous nous réservons le droit de modifier les tarifs à tout moment. Les modifications n'affectent pas les commandes déjà validées.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">6. Droit de rétractation</h2>
+  <p>Conformément à l'article L221-28 du Code de la consommation, le droit de rétractation <strong>ne s'applique pas</strong> aux contrats de fourniture de contenu numérique non fourni sur un support matériel dont l'exécution a commencé avec l'accord préalable du consommateur.</p>
+  <p class="mt-2">En validant votre commande et en soumettant un texte pour analyse, vous acceptez expressément que l'exécution du service commence immédiatement et renoncez à votre droit de rétractation.</p>
+  <p class="mt-2"><strong>Garantie de satisfaction :</strong> malgré l'inapplicabilité du droit de rétractation, nous proposons un remboursement en cas de dysfonctionnement technique avéré empêchant la délivrance de l'analyse (erreur serveur, échec de génération). Contactez contact@strategix.net dans les 7 jours suivant l'achat.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">7. Propriété intellectuelle</h2>
+  <ul class="list-disc pl-5 space-y-1">
+    <li><strong>Le service :</strong> l'ensemble du site, de son design, de son code source et de ses algorithmes est la propriété exclusive de Strategix. Toute reproduction est interdite.</li>
+    <li><strong>Vos textes :</strong> les textes que vous soumettez restent votre propriété. Vous nous accordez une licence temporaire et limitée pour les traiter via notre moteur IA.</li>
+    <li><strong>Les analyses :</strong> les analyses générées vous sont concédées à titre de licence personnelle, non cessible. Vous pouvez les utiliser librement à titre privé.</li>
+  </ul>
+
+  <h2 class="text-xl font-bold text-white mt-6">8. Contenu interdit</h2>
+  <p>Il est strictement interdit d'utiliser le service pour :</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li>Planifier, faciliter ou encourager des actes illégaux.</li>
+    <li>Harceler, menacer, intimider ou nuire à autrui.</li>
+    <li>Soumettre du contenu à caractère pédopornographique.</li>
+    <li>Manipuler, exploiter émotionnellement ou exercer un contrôle coercitif sur une personne.</li>
+    <li>Surveiller, traquer ou espionner une personne sans son consentement.</li>
+  </ul>
+  <p class="mt-2">Toute utilisation abusive entraînera le blocage de l'analyse sans remboursement et pourra donner lieu à un signalement aux autorités compétentes.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">9. Limitation de responsabilité</h2>
+  <p>Social Signal Translator fournit des analyses <strong>probabilistes générées par intelligence artificielle</strong>. En conséquence :</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li>Les résultats ne sont pas garantis comme exacts, complets ou adaptés à votre situation spécifique.</li>
+    <li>Strategix ne peut être tenu responsable des décisions prises par l'utilisateur sur la base des analyses.</li>
+    <li>Strategix ne peut être tenu responsable des dommages indirects, perte de chance, préjudice moral ou émotionnel liés à l'utilisation du service.</li>
+    <li>La responsabilité de Strategix est limitée au montant payé par l'utilisateur pour l'analyse concernée.</li>
+  </ul>
+
+  <h2 class="text-xl font-bold text-white mt-6">10. Âge minimum</h2>
+  <p>Le service est réservé aux personnes âgées de <strong>16 ans et plus</strong>. En utilisant le service, vous déclarez avoir au moins 16 ans. Les mineurs de moins de 16 ans ne sont pas autorisés à utiliser ce service.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">11. Protection des données</h2>
+  <p>Le traitement de vos données personnelles est détaillé dans notre <a href="/privacy" class="text-violet-400 hover:underline">Politique de Confidentialité</a>. En utilisant le service, vous reconnaissez avoir pris connaissance de cette politique.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">12. Modification des CGU</h2>
+  <p>Les présentes CGU peuvent être modifiées à tout moment. Les modifications prennent effet dès leur publication sur le site. La date de dernière mise à jour en haut de cette page fait foi. L'utilisation continue du service après modification vaut acceptation des nouvelles conditions.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">13. Loi applicable et juridiction</h2>
+  <p>Les présentes CGU sont régies par le <strong>droit français</strong>. Tout litige relatif à l'interprétation ou à l'exécution des présentes sera soumis aux tribunaux compétents de Paris, France, sous réserve des dispositions impératives applicables au consommateur.</p>
+  <p class="mt-2">Conformément à l'article L612-1 du Code de la consommation, en cas de litige, vous pouvez recourir gratuitement au service de médiation de la consommation. Nous vous communiquerons les coordonnées du médiateur compétent sur simple demande.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">14. Contact</h2>
+  <p>Pour toute question relative aux présentes CGU : <strong>contact@strategix.net</strong></p>
   `
 }
 
