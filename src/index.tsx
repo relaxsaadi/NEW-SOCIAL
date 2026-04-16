@@ -4,7 +4,7 @@ import { logger } from 'hono/logger'
 import { secureHeaders } from 'hono/secure-headers'
 import { serveStatic } from 'hono/cloudflare-workers'
 import type { Bindings } from './lib/types'
-import { now, ulid, logEvent } from './lib/db'
+import { now, ulid, logEvent, getOrCreateUser } from './lib/db'
 import { rateLimit } from './lib/rate-limit'
 import { ghlLeadCaptured } from './lib/ghl'
 import checkout from './routes/checkout'
@@ -21,7 +21,7 @@ app.use('/static/*', serveStatic({ root: './' }))
 
 // Rate limiting per endpoint
 app.use('/api/create-checkout-session', rateLimit(5, 60_000, 'checkout'))
-app.use('/api/create-free-analysis', rateLimit(2, 300_000, 'free')) // 2 per 5 min to prevent abuse
+app.use('/api/create-free-analysis', rateLimit(5, 60_000, 'free')) // 5 per minute to prevent abuse
 app.use('/api/analyze', rateLimit(5, 60_000, 'analyze'))
 app.use('/api/leads', rateLimit(3, 60_000, 'leads'))
 app.use('/api/create-upsell-session', rateLimit(5, 60_000, 'upsell'))
@@ -41,17 +41,18 @@ app.post('/api/create-free-analysis', async (c) => {
   const analysisId = ulid()
   const ts = now()
 
-  // Create user or get existing
-  const userId = ulid()
-  await c.env.DB.prepare(
-    `INSERT OR IGNORE INTO users (id, email, created_at, updated_at) VALUES (?, ?, ?, ?)`
-  ).bind(userId, email, ts, ts).run()
+  // Create user or get existing (uses correct DB schema)
+  const userId = await getOrCreateUser(c.env.DB, email, { locale: 'en', source: 'free_mini_decode' })
 
-  // Create analysis record — skip payment, go straight to paid
+  // Create analysis record (match checkout schema) then set user_id
   await c.env.DB.prepare(
-    `INSERT INTO analyses (id, user_id, offer_type, mode, status, created_at, updated_at)
-     VALUES (?, ?, 'mini_decode', 'message_decode', 'paid', ?, ?)`
-  ).bind(analysisId, userId, ts, ts).run()
+    `INSERT INTO analyses (id, offer_type, mode, context_type, status, created_at, updated_at)
+     VALUES (?, 'mini_decode', 'message_decode', 'other', 'paid', ?, ?)`
+  ).bind(analysisId, ts, ts).run()
+
+  await c.env.DB.prepare(
+    `UPDATE analyses SET user_id = ? WHERE id = ?`
+  ).bind(userId, analysisId).run()
 
   // Also capture as lead
   const leadId = ulid()
@@ -206,6 +207,9 @@ app.get('/upsell/:analysisId', async (c) => {
 app.get('/privacy', (c) => c.html(legalPage('Privacy Policy', privacyContent())))
 app.get('/terms', (c) => c.html(legalPage('Terms of Use', termsContent())))
 app.get('/legal', (c) => c.redirect('/terms'))
+
+// Free guide page
+app.get('/guide', (c) => c.html(guidePage()))
 
 // ── HTML Templates ────────────────────────────────────────────────────────────
 
@@ -1142,10 +1146,12 @@ ${HEAD('Result')}
   }
 
   const rawScores = (result.scores as Record<string, number>) || {}
-  // Normalize scores: LLM may return 0-10 or 0-100, we need 0-100 for display
+  // Normalize scores: LLM may return 0-1, 0-10, or 0-100, we need 0-100 for display
   const scores: Record<string, number> = {}
   for (const [key, val] of Object.entries(rawScores)) {
-    scores[key] = val <= 10 ? Math.round(val * 10) : Math.round(val)
+    if (val <= 1) scores[key] = Math.round(val * 100)        // 0-1 scale (e.g. 0.7 → 70)
+    else if (val <= 10) scores[key] = Math.round(val * 10)    // 0-10 scale (e.g. 7 → 70)
+    else scores[key] = Math.round(val)                         // already 0-100
   }
   const mainReading = result.main_reading as { title: string; description: string; probability_score: number } | undefined
   const alternativeReadings = (result.alternative_readings as Array<{ title: string; description: string; probability_score: number }>) || []
@@ -1300,10 +1306,35 @@ ${HEAD('Your analysis — Full report')}
           </div>
         </div>`).join('')}
       </div>
+      ${analysis.offer_type === 'mini_decode' ? `
+      <div class="mt-3 bg-gray-900/60 border border-gray-700 rounded-xl p-3 flex items-center gap-3">
+        <i class="fas fa-lock text-gray-500"></i>
+        <span class="text-gray-500 text-xs">+ more signals detected — <a href="/#pricing" class="text-violet-400 font-semibold hover:text-violet-300">unlock with Quick Decode</a></span>
+      </div>` : ''}
     </div>` : ''}
 
     <!-- Psychological Insight -->
-    ${psychologicalInsight?.framework ? `
+    ${analysis.offer_type === 'mini_decode' ? `
+    <div class="glass-card rounded-2xl p-6 mb-6 border border-purple-500/10 bg-purple-900/5 relative overflow-hidden">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-8 h-8 bg-purple-700/50 rounded-lg flex items-center justify-center">
+          <i class="fas fa-brain text-purple-400 text-sm"></i>
+        </div>
+        <div class="text-purple-400 text-xs font-mono uppercase tracking-wider font-bold">Psychological insight</div>
+        <span class="ml-auto bg-purple-900/40 border border-purple-700/30 text-purple-300 text-xs px-2 py-0.5 rounded-full"><i class="fas fa-lock text-xs mr-1"></i>Locked</span>
+      </div>
+      <div class="filter blur-sm select-none pointer-events-none">
+        <div class="bg-purple-900/20 border border-purple-800/30 rounded-xl px-4 py-2 mb-3">
+          <span class="text-purple-300 text-xs font-bold">Attachment Theory Framework</span>
+        </div>
+        <p class="text-gray-200 text-sm leading-relaxed mb-2">This behavior pattern is consistent with a specific attachment style that reveals...</p>
+      </div>
+      <div class="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px]">
+        <a href="/#pricing" class="bg-violet-600 hover:bg-violet-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xl transition-colors">
+          Unlock psychological insight — from €14.99 →
+        </a>
+      </div>
+    </div>` : psychologicalInsight?.framework ? `
     <div class="glass-card rounded-2xl p-6 mb-6 border border-purple-500/20 bg-gradient-to-br from-purple-900/10 to-indigo-900/10">
       <div class="flex items-center gap-2 mb-3">
         <div class="w-8 h-8 bg-purple-700/50 rounded-lg flex items-center justify-center">
@@ -1319,7 +1350,27 @@ ${HEAD('Your analysis — Full report')}
     </div>` : ''}
 
     <!-- Bias Check -->
-    ${biasCheck.length > 0 ? `
+    ${analysis.offer_type === 'mini_decode' ? `
+    <div class="glass-card rounded-2xl p-6 mb-6 border border-orange-500/10 bg-orange-900/5 relative overflow-hidden">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="w-8 h-8 bg-orange-700/50 rounded-lg flex items-center justify-center">
+          <i class="fas fa-eye text-orange-400 text-sm"></i>
+        </div>
+        <div class="text-orange-400 text-xs font-mono uppercase tracking-wider font-bold">Bias check</div>
+        <span class="ml-auto bg-orange-900/40 border border-orange-700/30 text-orange-300 text-xs px-2 py-0.5 rounded-full"><i class="fas fa-lock text-xs mr-1"></i>Locked</span>
+      </div>
+      <div class="filter blur-sm select-none pointer-events-none">
+        <div class="bg-gray-900/50 border border-orange-900/20 rounded-xl p-4">
+          <div class="text-orange-300 text-sm font-bold mb-1">Confirmation Bias Detected</div>
+          <p class="text-gray-400 text-xs leading-relaxed">You may be selectively interpreting signals to confirm your existing fear...</p>
+        </div>
+      </div>
+      <div class="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px] mt-12">
+        <a href="/#pricing" class="bg-orange-600 hover:bg-orange-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xl transition-colors">
+          Check your biases — from €14.99 →
+        </a>
+      </div>
+    </div>` : biasCheck.length > 0 ? `
     <div class="glass-card rounded-2xl p-6 mb-6 border border-orange-500/10 bg-orange-900/5">
       <div class="flex items-center gap-2 mb-4">
         <div class="w-8 h-8 bg-orange-700/50 rounded-lg flex items-center justify-center">
@@ -1821,6 +1872,161 @@ function termsContent(): string {
   <h2 class="text-xl font-bold text-white mt-6">14. Contact</h2>
   <p>For any questions regarding these Terms: <strong>social@strategixs.net</strong></p>
   `
+}
+
+function guidePage(): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+${HEAD('The 7 Signals That Never Lie — Free Guide')}
+<body class="bg-[#0a0a0a] text-gray-100 font-sans min-h-screen" data-page="guide">
+
+  <!-- Header -->
+  <nav class="border-b border-white/5 bg-[#0a0a0a]/95 backdrop-blur">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2">
+        <img src="/static/logo-192.png" alt="Signal Decoder" class="w-7 h-7 rounded-lg">
+        <span class="font-bold text-white text-sm">Signal Decoder</span>
+      </a>
+      <a href="/#pricing" class="bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-colors">
+        Try free analysis →
+      </a>
+    </div>
+  </nav>
+
+  <div class="max-w-3xl mx-auto px-4 py-12">
+
+    <!-- Hero -->
+    <div class="text-center mb-12">
+      <div class="inline-block bg-violet-900/40 border border-violet-700/30 text-violet-300 text-xs px-3 py-1.5 rounded-full mb-4 font-semibold">
+        FREE GUIDE
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-black text-white mb-3 leading-tight">
+        The 7 Signals<br>That Never Lie
+      </h1>
+      <p class="text-gray-400 text-sm max-w-lg mx-auto">The behaviors that reveal what someone really thinks — regardless of what they say. Downloaded by 1,200+ people.</p>
+    </div>
+
+    <!-- Intro -->
+    <div class="glass-card rounded-2xl p-6 border border-white/5 mb-8">
+      <p class="text-gray-300 text-sm leading-relaxed">
+        You're reading this because someone's behavior is confusing you. Good. That means your instincts are working.
+        Here are the 7 signals that never lie — no matter what they <em>say</em>.
+      </p>
+    </div>
+
+    <!-- Signals -->
+    <div class="space-y-6 mb-12">
+
+      ${[
+        {
+          num: '01',
+          title: 'Response Time Shifts',
+          color: 'violet',
+          icon: 'fa-clock',
+          body: "It's not about how fast they reply. It's about <strong class='text-white'>changes</strong> in speed. Someone who replied in 10 minutes and now takes 8 hours is telling you something. The shift is the signal, not the speed.",
+          key: 'Watch for: sudden delays where there were none before.'
+        },
+        {
+          num: '02',
+          title: 'Effort Asymmetry',
+          color: 'blue',
+          icon: 'fa-balance-scale',
+          body: "Count this: who initiates more? Who writes longer messages? Who asks questions? If it's 70/30 or worse — that's not shyness. That's a <strong class='text-white'>decision they've already made</strong>.",
+          key: 'Watch for: you always text first, they never ask you questions.'
+        },
+        {
+          num: '03',
+          title: 'The "Ok." / "Haha" / "👍" Response',
+          color: 'red',
+          icon: 'fa-comment-slash',
+          body: "When someone CAN give more but CHOOSES to give the minimum — that's the loudest signal of all. <strong class='text-white'>Low-effort replies to high-effort messages = emotional withdrawal.</strong>",
+          key: 'Watch for: your 3-paragraph message gets a one-word reply.'
+        },
+        {
+          num: '04',
+          title: 'Future Talk Disappears',
+          color: 'amber',
+          icon: 'fa-calendar-times',
+          body: "\"We should go there sometime\" turns into... nothing. When someone stops making plans or referencing the future, they're <strong class='text-white'>mentally already gone</strong>. The absence of future-talk is more honest than any words.",
+          key: 'Watch for: plans become vague, "someday" replaces actual dates.'
+        },
+        {
+          num: '05',
+          title: 'Public vs Private Behavior',
+          color: 'green',
+          icon: 'fa-eye',
+          body: "They're warm in person but cold over text? Or they post stories but don't reply to you? The gap between their <strong class='text-white'>public presence and their attention to YOU</strong> is a direct measure of priority.",
+          key: 'Watch for: active on social media but "too busy" to reply to you.'
+        },
+        {
+          num: '06',
+          title: 'The Excuse Pattern',
+          color: 'orange',
+          icon: 'fa-redo',
+          body: "One excuse is life. Two is a coincidence. <strong class='text-white'>Three is a pattern.</strong> Track the excuses — \"busy\", \"forgot\", \"fell asleep\" — if they repeat without any initiative to compensate, they're not excuses. They're choices.",
+          key: 'Watch for: excuses without repair attempts (no "let me make it up to you").'
+        },
+        {
+          num: '07',
+          title: 'Your Gut Feeling',
+          color: 'purple',
+          icon: 'fa-brain',
+          body: "Here's the one nobody tells you: if you're reading this guide, <strong class='text-white'>you already know something is off</strong>. The confusion you feel IS the signal. Healthy connections don't make you Google \"what does their message mean\" at 2am.",
+          key: 'The truth: anxiety about a relationship is data, not weakness.'
+        },
+      ].map(s => `
+      <div class="glass-card rounded-2xl p-6 border border-${s.color}-500/20 hover:border-${s.color}-500/40 transition-all">
+        <div class="flex items-start gap-4">
+          <div class="flex-shrink-0">
+            <div class="w-12 h-12 bg-${s.color}-900/50 border border-${s.color}-700/30 rounded-xl flex items-center justify-center">
+              <i class="fas ${s.icon} text-${s.color}-400"></i>
+            </div>
+            <div class="font-mono text-xs text-${s.color}-500/40 text-center mt-1 font-black">${s.num}</div>
+          </div>
+          <div>
+            <h2 class="text-lg font-black text-white mb-2">${s.title}</h2>
+            <p class="text-gray-300 text-sm leading-relaxed mb-3">${s.body}</p>
+            <div class="bg-${s.color}-950/30 border border-${s.color}-800/20 rounded-lg px-3 py-2">
+              <span class="text-${s.color}-400 text-xs font-semibold">${s.key}</span>
+            </div>
+          </div>
+        </div>
+      </div>`).join('')}
+
+    </div>
+
+    <!-- CTA Section -->
+    <div class="rounded-2xl p-[2px] bg-gradient-to-r from-violet-600 to-blue-500 mb-8">
+      <div class="bg-[#0a0816] rounded-2xl p-8 text-center">
+        <div class="text-3xl mb-3">🧠</div>
+        <h2 class="text-2xl font-black text-white mb-3">
+          Now you can see the signals.<br>
+          <span class="text-violet-400">Want to know what they mean?</span>
+        </h2>
+        <p class="text-gray-400 text-sm mb-6 max-w-md mx-auto">
+          These 7 signals help you spot the pattern. But every situation is unique.
+          Signal Decoder analyzes <strong class="text-white">your specific message</strong> and tells you exactly what's happening — with confidence scores, psychological frameworks, and what to do next.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+          <a href="/#pricing" class="bg-violet-600 hover:bg-violet-500 text-white px-8 py-4 rounded-xl font-black text-base transition-colors pulse-glow">
+            Try a free analysis now →
+          </a>
+        </div>
+        <p class="text-gray-600 text-xs mt-3">Free Mini Decode · No card needed · Result in 30 seconds</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center text-xs text-gray-600 pb-8 space-y-2">
+      <p>© 2026 Signal Decoder — Strategixs SAS</p>
+      <div class="flex justify-center gap-4">
+        <a href="/privacy" class="hover:text-gray-400 transition-colors">Privacy</a>
+        <a href="/terms" class="hover:text-gray-400 transition-colors">Terms</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`
 }
 
 function escapeHtml(str: string): string {

@@ -51,6 +51,10 @@ export function ghlLeadCaptured(email: string, source: string) {
     email,
     tags: ['lead_guide', 'signal_decoder', `source_${source}`],
     source,
+    custom_fields: {
+      guide_url: 'https://signaldecoder.net/guide',
+      lead_source: source,
+    },
   })
 }
 

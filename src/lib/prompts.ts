@@ -132,12 +132,21 @@ If the pattern suggests breadcrumbing or mixed signals, name it clearly.`,
 }
 
 const OFFER_PROMPTS: Record<OfferType, string> = {
-  mini_decode: `Offer mode: mini_decode — Return a FREE teaser result. Keep it valuable but leave the user wanting more.
-Target: minimal JSON, just enough to prove value and create desire for a paid tier.
-Required fields: summary / top 3 observable_signals / main_reading (NO alternative_readings) / scores / best_next_action / one-sentence psychological_insight.
-Omit: alternative_readings (set to empty array), reply_options (set to empty array), bias_check (set to empty array), extended uncertainties.
-The summary should end with a subtle hook like "A deeper analysis would reveal..." or "There are additional patterns here worth exploring..."
-Make the main_reading compelling but hint there's more beneath the surface.`,
+  mini_decode: `Offer mode: mini_decode — Return a FREE teaser result. Valuable enough to impress, but clearly incomplete to drive upgrades.
+Target: minimal JSON. Show the user you understand their situation — then make them want the full picture.
+Required fields ONLY:
+- summary: 1-2 sentences max. End with "A deeper analysis would reveal the full pattern."
+- observable_signals: return EXACTLY 2 signals (not 3, not more). Keep interpretations to one sentence each.
+- main_reading: ONE reading only with probability_score. Keep description to 2 sentences max.
+- scores: return all 5 scores (interest, clarity, respect, effort, manipulation_risk) on 0-100 scale.
+- best_next_action: ONE action, keep rationale to 1 sentence.
+MUST SET TO EMPTY/NULL:
+- alternative_readings: [] (empty array — this is a paid feature)
+- reply_options: [] (empty array — this is a paid feature)
+- bias_check: [] (empty array — this is a paid feature)
+- psychological_insight: {"framework": "Unlock with Quick Decode", "insight": "Upgrade to reveal the psychological framework behind this behavior.", "implication": ""}
+- uncertainties: [] (empty array)
+Do NOT provide deep analysis. Keep everything surface-level but accurate. The user should think "this is spot-on, I need to see more."`,
 
   quick_decode: `Offer mode: quick_decode — Return a concise but high-value result.
 Target: compact JSON, essential fields only.
@@ -201,7 +210,7 @@ JSON Schema to return:
   "observable_signals": [{"signal": "string", "type": "string", "interpretation": "string"}],
   "main_reading": {"title": "string", "description": "string", "probability_score": number},
   "alternative_readings": [{"title": "string", "description": "string", "probability_score": number}],
-  "scores": {"interest": number, "clarity": number, "respect": number, "effort": number, "manipulation_risk": number},
+  "scores": {"interest": number 0-100, "clarity": number 0-100, "respect": number 0-100, "effort": number 0-100, "manipulation_risk": number 0-100},
   "psychological_insight": {"framework": "string (e.g. Attachment Theory, Gottman, Cognitive Bias)", "insight": "string", "implication": "string"},
   "bias_check": [{"bias": "string", "how_it_applies": "string", "reality_test": "string"}],
   "best_next_action": {"action": "string", "rationale": "string"},

@@ -467,11 +467,12 @@ function setupLeadForm(form, emailSelector, source) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, source }),
       })
-      showToast('✅ Guide sent! Check your inbox.', 'success')
+      showToast('✅ Guide ready! Opening now...', 'success')
       form.reset()
       form.innerHTML = `<div class="text-center py-2">
         <div class="text-green-400 font-bold text-sm"><i class="fas fa-check-circle mr-1"></i>Guide sent to ${email}</div>
-        <div class="text-gray-500 text-xs mt-1">Check your inbox (and spam folder)</div>
+        <div class="text-gray-500 text-xs mt-1">Check your inbox too — we also emailed it to you.</div>
+        <a href="/guide" class="inline-block mt-2 text-violet-400 hover:text-violet-300 text-sm font-semibold">Read the guide now →</a>
       </div>`
     } catch {
       if (submitBtn) { submitBtn.textContent = 'Get the guide →'; submitBtn.disabled = false }
