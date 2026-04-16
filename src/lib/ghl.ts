@@ -3,7 +3,7 @@
  * Sends events to GHL for CRM automation (nurturing, upsell, retargeting).
  */
 
-const GHL_WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/WAy1ulfZlMMABol3w1jn/webhook-trigger/cc45929c-2f46-4645-9dba-b3b54472bd2b'
+const GHL_WEBHOOK_URL = 'https://services.leadconnectorhq.com/hooks/WAy1ulfZlMMABol3w1jn/webhook-trigger/d5bfe87d-7939-4e70-8343-47bed458250c'
 
 export type GHLEvent =
   | 'lead_captured'
