@@ -21,6 +21,7 @@ app.use('/static/*', serveStatic({ root: './' }))
 
 // Rate limiting per endpoint
 app.use('/api/create-checkout-session', rateLimit(5, 60_000, 'checkout'))
+app.use('/api/create-free-analysis', rateLimit(2, 300_000, 'free')) // 2 per 5 min to prevent abuse
 app.use('/api/analyze', rateLimit(5, 60_000, 'analyze'))
 app.use('/api/leads', rateLimit(3, 60_000, 'leads'))
 app.use('/api/create-upsell-session', rateLimit(5, 60_000, 'upsell'))
@@ -31,6 +32,38 @@ app.use('/api/webhooks/*', rateLimit(30, 60_000, 'webhooks'))
 app.route('/', checkout)
 app.route('/', analyze)
 app.route('/', admin)
+
+// ── Free Mini Decode ─────────────────────────────────────────────────────────
+app.post('/api/create-free-analysis', async (c) => {
+  const { email } = await c.req.json() as { email?: string }
+  if (!email) return c.json({ error: 'MISSING_EMAIL' }, 400)
+
+  const analysisId = ulid()
+  const ts = now()
+
+  // Create user or get existing
+  const userId = ulid()
+  await c.env.DB.prepare(
+    `INSERT OR IGNORE INTO users (id, email, created_at, updated_at) VALUES (?, ?, ?, ?)`
+  ).bind(userId, email, ts, ts).run()
+
+  // Create analysis record — skip payment, go straight to paid
+  await c.env.DB.prepare(
+    `INSERT INTO analyses (id, user_id, offer_type, mode, status, created_at, updated_at)
+     VALUES (?, ?, 'mini_decode', 'message_decode', 'paid', ?, ?)`
+  ).bind(analysisId, userId, ts, ts).run()
+
+  // Also capture as lead
+  const leadId = ulid()
+  await c.env.DB.prepare(
+    `INSERT OR IGNORE INTO leads (id, email, source, created_at) VALUES (?, ?, ?, ?)`
+  ).bind(leadId, email, 'free_mini_decode', ts).run()
+
+  await logEvent(c.env.DB, 'free_analysis_created', { analysis_id: analysisId })
+  c.executionCtx?.waitUntil(ghlLeadCaptured(email, 'free_mini_decode'))
+
+  return c.json({ analysisId, redirectUrl: `/intake/${analysisId}` })
+})
 
 // ── Helper: checkout status ───────────────────────────────────────────────────
 app.get('/api/checkout-status', async (c) => {
@@ -227,7 +260,7 @@ ${HEAD('Stop overthinking what that message really means')}
       </div>
       <a href="#pricing" onclick="document.getElementById('exit-popup').classList.add('hidden'); document.getElementById('exit-popup').classList.remove('flex')"
         class="block w-full bg-violet-600 hover:bg-violet-500 text-white py-4 rounded-xl font-black transition-colors">
-        Get my clarity now — from €19 →
+        Try a free analysis now →
       </a>
       <p class="text-gray-600 text-xs mt-3">Money-back guarantee · Result in 30 seconds</p>
     </div>
@@ -309,7 +342,7 @@ ${HEAD('Stop overthinking what that message really means')}
       <!-- Value comparison -->
       <div class="inline-flex items-center gap-2 bg-gray-900/60 border border-gray-800 rounded-xl px-3 sm:px-4 py-2 text-xs text-gray-400 mt-2">
         <i class="fas fa-calculator text-violet-400"></i>
-        <span>€29 = 5 min of clarity · vs. hours of overthinking.</span>
+        <span>Try free · or from €14.99 for full clarity · vs. hours of overthinking.</span>
       </div>
     </div>
   </section>
@@ -487,6 +520,23 @@ ${HEAD('Stop overthinking what that message really means')}
   </section>
 
   <!-- ═══════════════════════════════════════════════════════
+       INLINE LEAD CAPTURE — Capture emails early (before pricing)
+  ═══════════════════════════════════════════════════════ -->
+  <section class="px-4 py-10 border-t border-white/5 bg-gradient-to-b from-violet-950/10 to-transparent">
+    <div class="max-w-xl mx-auto text-center">
+      <p class="text-gray-400 text-sm mb-3">Not ready to analyze yet? Get our free guide first:</p>
+      <form id="lead-form-inline" class="flex flex-col sm:flex-row gap-3">
+        <input type="email" name="lead-email-inline" placeholder="Your email..." required
+          class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-200 focus:outline-none focus:border-violet-500 text-sm placeholder-gray-500">
+        <button type="submit" class="bg-violet-600 hover:bg-violet-500 text-white px-5 py-3 rounded-xl font-bold text-sm transition-colors cursor-pointer whitespace-nowrap">
+          Get "7 Signals That Never Lie" →
+        </button>
+      </form>
+      <p class="text-gray-600 text-xs mt-2">Free · 1,200+ downloads · Zero spam</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
        HOW IT WORKS — Simple, fast, no friction
   ═══════════════════════════════════════════════════════ -->
   <section id="how-it-works" class="px-4 py-16 border-t border-white/5">
@@ -497,7 +547,7 @@ ${HEAD('Stop overthinking what that message really means')}
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         ${[
-          { n:'01', icon:'fa-credit-card', color:'violet', title:'Pay once', desc:'Choose your analysis level. One payment. No subscription. No surprises.' },
+          { n:'01', icon:'fa-credit-card', color:'violet', title:'Choose your level', desc:'Start free or pick a paid tier. One payment. No subscription. No surprises.' },
           { n:'02', icon:'fa-paste', color:'blue', title:'Paste your situation', desc:'Message, email, social situation. Add context. Our AI does the rest in 30 seconds.' },
           { n:'03', icon:'fa-file-alt', color:'green', title:'Read your report', desc:'Scores, verdict, alternative readings, recommended action. Everything you need to know.' },
         ].map(s => `
@@ -530,15 +580,44 @@ ${HEAD('Stop overthinking what that message really means')}
         <p class="text-gray-400 max-w-xl mx-auto">Think about how much time, energy, and bad decisions uncertainty is costing you. These analyses cost less than a barista coffee.</p>
       </div>
 
-      <!-- Pricing comparison header -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
+      <!-- Pricing Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mt-10">
+
+        <!-- Mini Decode — FREE -->
+        <div class="glass-card rounded-2xl p-6 border border-green-700/30 hover:border-green-500/40 transition-all relative">
+          <div class="absolute -top-3 left-4 bg-green-600 text-white text-xs px-3 py-1 rounded-full font-black uppercase tracking-wider">
+            FREE
+          </div>
+          <div class="text-green-400 text-xs font-mono mb-3 uppercase tracking-wider mt-2">Mini Decode</div>
+          <div class="text-4xl font-black text-white mb-1">€0</div>
+          <div class="text-gray-400 text-xs mb-5">Quick verdict — see what we do</div>
+          <div class="space-y-2 mb-6">
+            ${[
+              ['fa-check', 'green', 'Verdict with confidence score'],
+              ['fa-check', 'green', 'Top 3 observable signals'],
+              ['fa-check', 'green', 'Main reading + probability'],
+              ['fa-check', 'green', 'One recommended action'],
+              ['fa-times', 'gray', 'No alternative readings'],
+              ['fa-times', 'gray', 'No reply suggestions'],
+            ].map(([ic, col, txt]) =>
+              `<li class="flex items-start gap-2 text-sm ${col === 'gray' ? 'text-gray-600' : 'text-gray-300'} list-none"><i class="fas ${ic} text-${col}-400 mt-0.5 text-xs flex-shrink-0"></i>${txt}</li>`
+            ).join('')}
+          </div>
+          <div class="mb-3">
+            <input type="email" name="free-email" placeholder="Your email..." required
+              class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2.5 text-gray-200 focus:outline-none focus:border-green-500 text-sm placeholder-gray-500">
+          </div>
+          <button data-offer="mini_decode"
+            class="w-full bg-green-600 hover:bg-green-500 text-white py-3.5 rounded-xl font-bold transition-all cursor-pointer text-sm">
+            Try free — no card needed →
+          </button>
+        </div>
 
         <!-- Quick Decode -->
         <div class="glass-card rounded-2xl p-6 border border-gray-700/50 hover:border-violet-500/40 transition-all">
           <div class="text-gray-400 text-xs font-mono mb-3 uppercase tracking-wider">Quick Decode</div>
-          <!-- Value stack anchoring -->
           <div class="text-gray-600 text-sm line-through mb-1">Real value: €90</div>
-          <div class="text-4xl font-black text-white mb-1">€19</div>
+          <div class="text-4xl font-black text-white mb-1">€14.99</div>
           <div class="text-gray-400 text-xs mb-5">Clear answer on a single message</div>
           <div class="space-y-2 mb-6">
             ${[
@@ -546,36 +625,35 @@ ${HEAD('Stop overthinking what that message really means')}
               ['fa-check', 'violet', '3 observable signals decoded'],
               ['fa-check', 'violet', 'Main reading + probability'],
               ['fa-check', 'violet', '2 alternative readings'],
+              ['fa-check', 'violet', 'Psychological insight & bias check'],
               ['fa-check', 'violet', 'Concrete recommended action'],
-              ['fa-check', 'violet', 'Report ready in 30 seconds'],
             ].map(([ic, col, txt]) =>
               `<li class="flex items-start gap-2 text-sm text-gray-300 list-none"><i class="fas ${ic} text-${col}-400 mt-0.5 text-xs flex-shrink-0"></i>${txt}</li>`
             ).join('')}
           </div>
           <button data-offer="quick_decode"
             class="w-full bg-gray-800 hover:bg-violet-700 border border-gray-700 hover:border-violet-500 text-white py-3.5 rounded-xl font-bold transition-all cursor-pointer text-sm">
-            Get my clarity — €19 →
+            Get my clarity — €14.99 →
           </button>
         </div>
 
         <!-- Deep Read — HERO OFFER -->
         <div class="relative rounded-2xl p-[2px] bg-gradient-to-b from-violet-500 to-blue-500 shadow-2xl shadow-violet-900/50">
           <div class="bg-[#111] rounded-2xl p-6 h-full">
-            <!-- Badge -->
             <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-600 to-blue-600 text-white text-xs px-4 py-1.5 rounded-full font-black uppercase tracking-wider shadow-lg">
-              MOST POPULAR
+              BEST VALUE
             </div>
             <div class="text-violet-400 text-xs font-mono mb-3 uppercase tracking-wider">Deep Read</div>
             <div class="text-gray-600 text-sm line-through mb-1">Real value: €290</div>
-            <div class="text-4xl font-black text-white mb-1">€29</div>
-            <div class="text-gray-400 text-xs mb-5">Full analysis — complex situations</div>
+            <div class="text-4xl font-black text-white mb-1">€24.99</div>
+            <div class="text-gray-400 text-xs mb-5">Full analysis + reply suggestions included</div>
             <div class="space-y-2 mb-6">
               ${[
                 ['fa-check', 'violet', 'Everything in Quick Decode'],
                 ['fa-check', 'violet', 'Relational dynamics analyzed'],
                 ['fa-check', 'violet', 'Hidden meanings & subtext detected'],
-                ['fa-check', 'violet', 'Your cognitive biases identified'],
-                ['fa-check', 'violet', '3 written reply suggestions'],
+                ['fa-check', 'violet', 'Deep psychological frameworks applied'],
+                ['fa-check', 'violet', '3 written reply suggestions included'],
                 ['fa-check', 'violet', 'Immediate actionable strategy'],
               ].map(([ic, col, txt]) =>
                 `<li class="flex items-start gap-2 text-sm text-gray-200 list-none"><i class="fas ${ic} text-${col}-400 mt-0.5 text-xs flex-shrink-0"></i>${txt}</li>`
@@ -583,9 +661,9 @@ ${HEAD('Stop overthinking what that message really means')}
             </div>
             <button data-offer="deep_read"
               class="w-full bg-violet-600 hover:bg-violet-500 text-white py-4 rounded-xl font-black transition-all cursor-pointer pulse-glow text-base">
-              Get my Deep Read — €29 →
+              Get my Deep Read — €24.99 →
             </button>
-            <p class="text-center text-gray-600 text-xs mt-2">Money-back guarantee</p>
+            <p class="text-center text-gray-600 text-xs mt-2">Money-back guarantee · Replies included</p>
           </div>
         </div>
 
@@ -593,23 +671,23 @@ ${HEAD('Stop overthinking what that message really means')}
         <div class="glass-card rounded-2xl p-6 border border-gray-700/50 hover:border-violet-500/40 transition-all">
           <div class="text-gray-400 text-xs font-mono mb-3 uppercase tracking-wider">Pattern Analysis</div>
           <div class="text-gray-600 text-sm line-through mb-1">Real value: €490</div>
-          <div class="text-4xl font-black text-white mb-1">€59</div>
+          <div class="text-4xl font-black text-white mb-1">€49.99</div>
           <div class="text-gray-400 text-xs mb-5">Understand a relationship over time</div>
           <div class="space-y-2 mb-6">
             ${[
               ['fa-check', 'violet', 'Full history analysis'],
               ['fa-check', 'violet', 'Emotional trends (hot/cold)'],
-              ['fa-check', 'violet', 'Effort asymmetry (who invests more)'],
-              ['fa-check', 'violet', 'Power dynamics detected'],
+              ['fa-check', 'violet', 'Effort asymmetry mapped'],
+              ['fa-check', 'violet', 'Power dynamics & attachment style'],
               ['fa-check', 'violet', 'Breadcrumbing / manipulation detected'],
-              ['fa-check', 'violet', 'Complete relationship strategy'],
+              ['fa-check', 'violet', '3 reply suggestions + strategy'],
             ].map(([ic, col, txt]) =>
               `<li class="flex items-start gap-2 text-sm text-gray-300 list-none"><i class="fas ${ic} text-${col}-400 mt-0.5 text-xs flex-shrink-0"></i>${txt}</li>`
             ).join('')}
           </div>
           <button data-offer="pattern_analysis"
             class="w-full bg-gray-800 hover:bg-violet-700 border border-gray-700 hover:border-violet-500 text-white py-3.5 rounded-xl font-bold transition-all cursor-pointer text-sm">
-            Analyze my pattern — €59 →
+            Analyze my pattern — €49.99 →
           </button>
         </div>
       </div>
@@ -649,7 +727,7 @@ ${HEAD('Stop overthinking what that message really means')}
           { method: 'Ask friends', cost: '€0 but...',  time: '2-48h', obj: '❌ Emotional bias', highlight: false },
           { method: 'Coaching session',  cost: '€80-200',    time: '3-7 days', obj: '✓ Partial', highlight: false },
           { method: 'Therapy session',           cost: '€60-120',   time: '1-3 weeks', obj: '✓ Good', highlight: false },
-          { method: '🧠 Signal Decoder', cost: 'from €19',   time: '< 5 minutes', obj: '✅ Zero bias', highlight: true },
+          { method: '🧠 Signal Decoder', cost: 'Free — €49.99',   time: '< 5 minutes', obj: '✅ Zero bias', highlight: true },
         ].map(r => `
         <div class="grid grid-cols-4 text-xs text-center border-t border-gray-800 ${r.highlight ? 'bg-violet-900/20' : ''}">
           <div class="p-3 text-left ${r.highlight ? 'text-white font-bold' : 'text-gray-400'}">${r.method}</div>
@@ -684,7 +762,7 @@ ${HEAD('Stop overthinking what that message really means')}
           },
           {
             q: 'I just want quick advice, not a full analysis.',
-            a: 'The Quick Decode at €19 is made for exactly that. One message, one clear verdict, one recommended action. No information overload. Just what you need to make the right decision today.'
+            a: 'Try our free Mini Decode first — one message, one verdict, one action. If you want more depth, the Quick Decode at €14.99 adds alternative readings and psychological insights. No information overload. Just what you need.'
           },
         ].map((faq, i) => `
         <div class="glass-card rounded-xl border border-gray-800">
@@ -737,7 +815,7 @@ ${HEAD('Stop overthinking what that message really means')}
         Every hour you wait is another hour<br>
         <span class="gradient-text">torturing yourself for nothing.</span>
       </h2>
-      <p class="text-gray-400 mb-3 text-lg">The clarity you've been searching for is <strong class="text-white">€29</strong> and <strong class="text-white">5 minutes</strong> away.</p>
+      <p class="text-gray-400 mb-3 text-lg">The clarity you've been searching for is <strong class="text-white">free to try</strong> and <strong class="text-white">5 minutes</strong> away.</p>
       <p class="text-gray-600 text-sm mb-8">And if the analysis doesn't help: full refund. Zero risk.</p>
       <a href="#pricing"
         class="inline-block bg-violet-600 hover:bg-violet-500 text-white px-12 py-5 rounded-2xl text-xl font-black transition-all pulse-glow shadow-2xl shadow-violet-900/60 mb-4">
@@ -796,12 +874,14 @@ ${HEAD('Payment confirmed')}
 
 function intakePage(analysisId: string, offerType: string, defaultMode: string): string {
   const offerLabels: Record<string, string> = {
-    quick_decode: 'Quick Decode — 19€',
-    deep_read: 'Deep Read — 29€',
-    pattern_analysis: 'Pattern Analysis — 59€',
+    mini_decode: 'Mini Decode — Free',
+    quick_decode: 'Quick Decode — €14.99',
+    deep_read: 'Deep Read — €24.99',
+    pattern_analysis: 'Pattern Analysis — €49.99',
   }
 
   const offerIcons: Record<string, string> = {
+    mini_decode: 'fa-zap',
     quick_decode: 'fa-bolt',
     deep_read: 'fa-search',
     pattern_analysis: 'fa-chart-line',
@@ -827,7 +907,7 @@ ${HEAD('Your analysis is ready — Describe your situation')}
         <div class="w-7 h-7 bg-green-600 rounded-full flex items-center justify-center shadow-lg shadow-green-900/50">
           <i class="fas fa-check text-white text-xs"></i>
         </div>
-        <span class="text-green-400 font-bold hidden sm:inline">Payment ✓</span>
+        <span class="text-green-400 font-bold hidden sm:inline">${offerType === 'mini_decode' ? 'Free access ✓' : 'Payment ✓'}</span>
       </div>
       <div class="flex-1 h-1 bg-gradient-to-r from-green-600 to-violet-600 mx-2 rounded-full"></div>
       <div class="flex items-center gap-2 flex-shrink-0">
@@ -1073,6 +1153,8 @@ ${HEAD('Result')}
   const bestNextAction = result.best_next_action as { action: string; rationale: string } | undefined
   const replyOptions = (result.reply_options as Array<{ style: string; text: string; why_it_works: string }>) || []
   const uncertainties = (result.uncertainties as string[]) || []
+  const psychologicalInsight = result.psychological_insight as { framework: string; insight: string; implication: string } | undefined
+  const biasCheck = (result.bias_check as Array<{ bias: string; how_it_applies: string; reality_test: string }>) || []
   // Confidence: use DB value (already normalized to 0-1), or fallback to main_reading probability
   const confidence = analysis.confidence_score
     ? Math.round(analysis.confidence_score * 100)
@@ -1220,6 +1302,44 @@ ${HEAD('Your analysis — Full report')}
       </div>
     </div>` : ''}
 
+    <!-- Psychological Insight -->
+    ${psychologicalInsight?.framework ? `
+    <div class="glass-card rounded-2xl p-6 mb-6 border border-purple-500/20 bg-gradient-to-br from-purple-900/10 to-indigo-900/10">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-8 h-8 bg-purple-700/50 rounded-lg flex items-center justify-center">
+          <i class="fas fa-brain text-purple-400 text-sm"></i>
+        </div>
+        <div class="text-purple-400 text-xs font-mono uppercase tracking-wider font-bold">Psychological insight</div>
+      </div>
+      <div class="bg-purple-900/20 border border-purple-800/30 rounded-xl px-4 py-2 mb-3">
+        <span class="text-purple-300 text-xs font-bold">${escapeHtml(psychologicalInsight.framework)}</span>
+      </div>
+      <p class="text-gray-200 text-sm leading-relaxed mb-2">${escapeHtml(psychologicalInsight.insight)}</p>
+      ${psychologicalInsight.implication ? `<p class="text-gray-400 text-xs leading-relaxed border-t border-purple-800/20 pt-2 mt-2"><strong class="text-purple-300">What this means:</strong> ${escapeHtml(psychologicalInsight.implication)}</p>` : ''}
+    </div>` : ''}
+
+    <!-- Bias Check -->
+    ${biasCheck.length > 0 ? `
+    <div class="glass-card rounded-2xl p-6 mb-6 border border-orange-500/10 bg-orange-900/5">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="w-8 h-8 bg-orange-700/50 rounded-lg flex items-center justify-center">
+          <i class="fas fa-eye text-orange-400 text-sm"></i>
+        </div>
+        <div class="text-orange-400 text-xs font-mono uppercase tracking-wider font-bold">Bias check — are you reading this clearly?</div>
+      </div>
+      <div class="space-y-3">
+        ${biasCheck.map(b => `
+        <div class="bg-gray-900/50 border border-orange-900/20 rounded-xl p-4">
+          <div class="text-orange-300 text-sm font-bold mb-1">${escapeHtml(b.bias)}</div>
+          <p class="text-gray-400 text-xs leading-relaxed mb-2">${escapeHtml(b.how_it_applies)}</p>
+          <div class="bg-orange-950/30 border border-orange-800/20 rounded-lg px-3 py-2">
+            <span class="text-orange-400 text-xs font-semibold">Reality test:</span>
+            <span class="text-gray-300 text-xs"> ${escapeHtml(b.reality_test)}</span>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>` : ''}
+
     <!-- Best Next Action — most actionable section -->
     ${bestNextAction ? `
     <div class="bg-green-950/30 border-2 border-green-700/40 rounded-2xl p-6 mb-6">
@@ -1261,8 +1381,8 @@ ${HEAD('Your analysis — Full report')}
       </ul>
     </div>` : ''}
 
-    <!-- UPSELL — Hormozi: strike when iron is hot, anchor high, show exact value -->
-    ${!upsellStatus || upsellStatus === 'offered' ? `
+    <!-- UPSELL — only for mini_decode and quick_decode (deep_read+ includes replies) -->
+    ${(analysis.offer_type === 'mini_decode' || analysis.offer_type === 'quick_decode') && (!upsellStatus || upsellStatus === 'offered') ? `
     <div class="rounded-2xl p-[2px] bg-gradient-to-r from-violet-600 to-blue-500 mb-6 shadow-2xl shadow-violet-900/30">
       <div class="bg-[#0a0816] rounded-2xl p-6">
         <!-- Header with scarcity -->
@@ -1318,6 +1438,34 @@ ${HEAD('Your analysis — Full report')}
       <div>
         <div class="text-green-300 font-bold text-sm">Reply Generator activated</div>
         <div class="text-gray-400 text-xs">Your written replies are included above.</div>
+      </div>
+    </div>` : ''}
+
+    <!-- Upgrade CTA for free users -->
+    ${analysis.offer_type === 'mini_decode' ? `
+    <div class="rounded-2xl p-[2px] bg-gradient-to-r from-violet-600 to-blue-500 mb-6 shadow-2xl shadow-violet-900/30">
+      <div class="bg-[#0a0816] rounded-2xl p-6 text-center">
+        <div class="text-3xl mb-3">🔓</div>
+        <h3 class="text-xl font-black text-white mb-2">Want the full picture?</h3>
+        <p class="text-gray-400 text-sm mb-2">Your free analysis showed the surface. Unlock:</p>
+        <div class="grid grid-cols-2 gap-2 mb-4 text-left max-w-sm mx-auto">
+          ${[
+            'Alternative readings',
+            'Psychological frameworks',
+            'Cognitive bias check',
+            'Reply suggestions',
+            'Deep subtext analysis',
+            'Full actionable strategy',
+          ].map(f => `<div class="flex items-center gap-2 text-xs text-gray-300"><i class="fas fa-lock-open text-violet-400 text-xs"></i>${f}</div>`).join('')}
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+          <a href="/#pricing" class="bg-violet-600 hover:bg-violet-500 text-white px-6 py-3 rounded-xl font-bold text-sm transition-colors">
+            Upgrade to Deep Read — €24.99 →
+          </a>
+          <a href="/#pricing" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 px-6 py-3 rounded-xl font-bold text-sm transition-colors">
+            See all plans
+          </a>
+        </div>
       </div>
     </div>` : ''}
 
@@ -1616,10 +1764,11 @@ function termsContent(): string {
   <h2 class="text-xl font-bold text-white mt-6">5. Pricing and payment</h2>
   <p>Prices are displayed in euros (EUR), all taxes included. Available offers are:</p>
   <ul class="list-disc pl-5 space-y-1">
-    <li><strong>Quick Decode:</strong> €19 — concise analysis of a single message.</li>
-    <li><strong>Deep Read:</strong> €29 — in-depth analysis with context.</li>
-    <li><strong>Pattern Analysis:</strong> €59 — relational pattern analysis.</li>
-    <li><strong>Reply Generator (upsell):</strong> €9 — 3 personalized reply suggestions.</li>
+    <li><strong>Mini Decode:</strong> Free — basic verdict on a single message.</li>
+    <li><strong>Quick Decode:</strong> €14.99 — concise analysis of a single message.</li>
+    <li><strong>Deep Read:</strong> €24.99 — in-depth analysis with context and reply suggestions.</li>
+    <li><strong>Pattern Analysis:</strong> €49.99 — relational pattern analysis with reply suggestions.</li>
+    <li><strong>Reply Generator (upsell):</strong> €9 — 3 personalized reply suggestions (for Quick/Mini Decode).</li>
   </ul>
   <p class="mt-2">Payments are processed securely by <strong>Stripe, Inc.</strong> We do not store any banking data.</p>
   <p class="mt-2">We reserve the right to modify prices at any time. Changes do not affect orders already confirmed.</p>

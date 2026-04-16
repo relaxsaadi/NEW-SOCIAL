@@ -22,7 +22,7 @@ export interface AnalysisInput {
 export async function callLLM(config: LLMConfig, input: AnalysisInput): Promise<unknown> {
   const systemPrompt = buildSystemPrompt(input.offerType, input.mode)
   const userPrompt = buildUserPrompt({
-    language: input.language ?? 'fr',
+    language: input.language ?? 'en',
     offerType: input.offerType,
     mode: input.mode,
     contextType: input.contextType,

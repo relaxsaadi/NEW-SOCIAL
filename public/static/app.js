@@ -108,13 +108,45 @@ function initCheckoutButtons() {
   $$('[data-offer]').forEach(btn => {
     on(btn, 'click', async () => {
       const offerType = btn.dataset.offer
-      const email = $('[name="email"]')?.value?.trim()
 
       // Micro-interaction: button state feedback
       const originalText = btn.textContent
-      btn.textContent = '⏳ Redirecting...'
+      btn.textContent = '⏳ Processing...'
       btn.disabled = true
 
+      // Free Mini Decode — different flow (no Stripe)
+      if (offerType === 'mini_decode') {
+        const email = $('[name="free-email"]')?.value?.trim()
+        if (!email) {
+          showToast('Please enter your email first', 'error')
+          btn.textContent = originalText
+          btn.disabled = false
+          return
+        }
+        try {
+          const res = await fetch('/api/create-free-analysis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+          })
+          const data = await res.json()
+          if (data.redirectUrl) {
+            window.location.href = data.redirectUrl
+          } else {
+            showToast(data.message || 'Error creating analysis', 'error')
+            btn.textContent = originalText
+            btn.disabled = false
+          }
+        } catch (e) {
+          showToast('Connection error', 'error')
+          btn.textContent = originalText
+          btn.disabled = false
+        }
+        return
+      }
+
+      // Paid offers — Stripe checkout
+      const email = $('[name="email"]')?.value?.trim()
       try {
         const res = await fetch('/api/create-checkout-session', {
           method: 'POST',
@@ -420,26 +452,24 @@ function initResultPage() {
 }
 
 // ── Lead capture ──────────────────────────────────────────────────────────────
-function initLeadCapture() {
-  const leadForm = $('#lead-form')
-  on(leadForm, 'submit', async (e) => {
+function setupLeadForm(form, emailSelector, source) {
+  on(form, 'submit', async (e) => {
     e.preventDefault()
-    const email = $('[name="lead-email"]')?.value?.trim()
+    const email = $(emailSelector)?.value?.trim()
     if (!email) return
 
-    const submitBtn = leadForm.querySelector('[type="submit"]')
+    const submitBtn = form.querySelector('[type="submit"]')
     if (submitBtn) { submitBtn.textContent = '⏳ Sending...'; submitBtn.disabled = true }
 
     try {
       await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, source: 'landing_lead_magnet' }),
+        body: JSON.stringify({ email, source }),
       })
       showToast('✅ Guide sent! Check your inbox.', 'success')
-      leadForm.reset()
-      // Replace form with success message
-      leadForm.innerHTML = `<div class="text-center py-2">
+      form.reset()
+      form.innerHTML = `<div class="text-center py-2">
         <div class="text-green-400 font-bold text-sm"><i class="fas fa-check-circle mr-1"></i>Guide sent to ${email}</div>
         <div class="text-gray-500 text-xs mt-1">Check your inbox (and spam folder)</div>
       </div>`
@@ -447,6 +477,14 @@ function initLeadCapture() {
       if (submitBtn) { submitBtn.textContent = 'Get the guide →'; submitBtn.disabled = false }
     }
   })
+}
+
+function initLeadCapture() {
+  const leadForm = $('#lead-form')
+  if (leadForm) setupLeadForm(leadForm, '[name="lead-email"]', 'landing_lead_magnet')
+
+  const inlineForm = $('#lead-form-inline')
+  if (inlineForm) setupLeadForm(inlineForm, '[name="lead-email-inline"]', 'landing_inline')
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────

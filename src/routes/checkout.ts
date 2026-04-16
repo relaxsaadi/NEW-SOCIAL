@@ -17,7 +17,12 @@ checkout.post('/api/create-checkout-session', async (c) => {
   }
 
   if (!offerType || !OFFER_PRICES[offerType]) {
-    return c.json({ error: 'INVALID_OFFER', message: 'offerType must be quick_decode, deep_read or pattern_analysis' }, 400)
+    return c.json({ error: 'INVALID_OFFER', message: 'Invalid offer type' }, 400)
+  }
+
+  // Mini decode is free — handled by /api/create-free-analysis
+  if (offerType === 'mini_decode') {
+    return c.json({ error: 'USE_FREE_ENDPOINT', message: 'Use /api/create-free-analysis for mini_decode' }, 400)
   }
 
   const analysisId = ulid()
@@ -25,7 +30,7 @@ checkout.post('/api/create-checkout-session', async (c) => {
 
   try {
     // Get Stripe price ID from env or use amount
-    const priceMap: Record<OfferType, string> = {
+    const priceMap: Partial<Record<OfferType, string>> = {
       quick_decode: c.env.STRIPE_PRICE_QUICK,
       deep_read: c.env.STRIPE_PRICE_DEEP,
       pattern_analysis: c.env.STRIPE_PRICE_PATTERN,
