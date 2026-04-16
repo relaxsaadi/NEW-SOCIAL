@@ -54,7 +54,7 @@ export function rateLimit(maxRequests: number, windowMs: number, keyPrefix = 'gl
       c.header('X-RateLimit-Limit', String(maxRequests))
       c.header('X-RateLimit-Remaining', '0')
       return c.json(
-        { error: 'RATE_LIMITED', message: `Trop de requêtes. Réessayez dans ${retryAfter}s.` },
+        { error: 'RATE_LIMITED', message: `Too many requests. Try again in ${retryAfter}s.` },
         429
       )
     }
@@ -84,7 +84,7 @@ export function authRateLimit(maxAttempts: number, lockoutMs: number) {
     if (entry && entry.lockedUntil > now) {
       const retryAfter = Math.ceil((entry.lockedUntil - now) / 1000)
       return c.json(
-        { error: 'LOCKED_OUT', message: `Compte temporairement verrouillé. Réessayez dans ${retryAfter}s.` },
+        { error: 'LOCKED_OUT', message: `Account temporarily locked. Try again in ${retryAfter}s.` },
         429
       )
     }

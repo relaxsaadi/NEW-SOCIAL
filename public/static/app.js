@@ -14,7 +14,7 @@ function showToast(msg, type = 'info') {
   setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300) }, 3000)
 }
 
-function setLoading(btn, loading, text = 'Chargement...') {
+function setLoading(btn, loading, text = 'Loading...') {
   if (!btn) return
   btn.disabled = loading
   btn.dataset.originalText = btn.dataset.originalText || btn.textContent
@@ -35,7 +35,7 @@ function initLiveCounter() {
     const delta = Math.random() > 0.5 ? 1 : -1
     current = Math.max(32, Math.min(89, current + delta))
     if (liveCountEl) liveCountEl.textContent = current
-    if (navCountEl) navCountEl.textContent = `${current} en ligne`
+    if (navCountEl) navCountEl.textContent = `${current} online`
   }
 
   // Animate the hero count (total analyses)
@@ -44,7 +44,7 @@ function initLiveCounter() {
     const heroTarget = 2847
     const heroInterval = setInterval(() => {
       heroVal = Math.min(heroTarget, heroVal + Math.floor(Math.random() * 8) + 3)
-      heroCountEl.textContent = `+${heroVal.toLocaleString('fr-FR')}`
+      heroCountEl.textContent = `+${heroVal.toLocaleString('en-US')}`
       if (heroVal >= heroTarget) clearInterval(heroInterval)
     }, 40)
   }
@@ -112,25 +112,25 @@ function initCheckoutButtons() {
 
       // Micro-interaction: button state feedback
       const originalText = btn.textContent
-      btn.textContent = '⏳ Redirection en cours...'
+      btn.textContent = '⏳ Redirecting...'
       btn.disabled = true
 
       try {
         const res = await fetch('/api/create-checkout-session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ offerType, email: email || undefined, locale: 'fr' }),
+          body: JSON.stringify({ offerType, email: email || undefined, locale: 'en' }),
         })
         const data = await res.json()
         if (data.checkoutUrl) {
           window.location.href = data.checkoutUrl
         } else {
-          showToast(data.message || 'Erreur lors du paiement', 'error')
+          showToast(data.message || 'Payment error', 'error')
           btn.textContent = originalText
           btn.disabled = false
         }
       } catch (e) {
-        showToast('Erreur de connexion', 'error')
+        showToast('Connection error', 'error')
         btn.textContent = originalText
         btn.disabled = false
       }
@@ -158,12 +158,12 @@ async function initCheckoutSuccess() {
       const data = await res.json()
 
       if (data.analysisId && data.status === 'paid') {
-        if (statusEl) statusEl.textContent = 'Paiement confirmé ! Redirection...'
+        if (statusEl) statusEl.textContent = 'Payment confirmed! Redirecting...'
         setTimeout(() => window.location.href = `/intake/${data.analysisId}`, 1000)
       } else if (attempts < 15) {
         setTimeout(poll, 2000)
       } else {
-        if (statusEl) statusEl.textContent = 'Vérification en cours... Veuillez patienter.'
+        if (statusEl) statusEl.textContent = 'Verifying... Please wait.'
         setTimeout(poll, 5000)
       }
     } catch {
@@ -199,23 +199,23 @@ function initIntakeForm() {
       if (len < 20) {
         quality = Math.min(len / 20 * 15, 15)
         color = 'bg-red-600'
-        label = '⚠️ Signal insuffisant — ajoutez plus de détails'
+        label = '⚠️ Insufficient signal — add more details'
       } else if (len < 60) {
         quality = 15 + (len - 20) / 40 * 25
         color = 'bg-orange-500'
-        label = '📝 Signal faible — continuez...'
+        label = '📝 Weak signal — keep going...'
       } else if (len < 150) {
         quality = 40 + (len - 60) / 90 * 30
         color = 'bg-amber-500'
-        label = '🔍 Signal moyen — ajoutez le contexte'
+        label = '🔍 Medium signal — add context'
       } else if (len < 300) {
         quality = 70 + (len - 150) / 150 * 20
         color = 'bg-green-500'
-        label = '✅ Bon signal — verdict précis garanti'
+        label = '✅ Good signal — accurate verdict guaranteed'
       } else {
         quality = 90 + Math.min((len - 300) / 200 * 10, 10)
         color = 'bg-emerald-500'
-        label = '🎯 Signal excellent — verdict haute confiance'
+        label = '🎯 Excellent signal — high-confidence verdict'
       }
       qualityBar.style.width = `${Math.min(quality, 100)}%`
       qualityBar.className = `h-1 rounded-full transition-all duration-300 ${color}`
@@ -244,11 +244,11 @@ function initIntakeForm() {
     const inputTextVal = formData.get('inputText')?.toString().trim()
 
     if (!inputTextVal || inputTextVal.length < 10) {
-      showToast('Veuillez entrer au moins 10 caractères pour une analyse fiable', 'error')
+      showToast('Please enter at least 10 characters for a reliable analysis', 'error')
       return
     }
 
-    setLoading(submitBtn, true, '⚡ Analyse en cours...')
+    setLoading(submitBtn, true, '⚡ Analyzing...')
 
     const payload = {
       analysisId,
@@ -272,11 +272,11 @@ function initIntakeForm() {
       if (res.ok && data.status === 'generating') {
         window.location.href = `/processing/${analysisId}`
       } else {
-        showToast(data.message || 'Erreur lors de la soumission', 'error')
+        showToast(data.message || 'Submission error', 'error')
         setLoading(submitBtn, false)
       }
     } catch (e) {
-      showToast('Erreur de connexion', 'error')
+      showToast('Connection error', 'error')
       setLoading(submitBtn, false)
     }
   })
@@ -293,14 +293,14 @@ function initProcessingPage() {
 
   let progress = 0
   const steps = [
-    'Initialisation de l\'analyse...',
-    'Détection des signaux observables...',
-    'Analyse du timing et du ton...',
-    'Évaluation de la cohérence comportementale...',
-    'Cartographie des dynamiques relationnelles...',
-    'Calcul des scores de confiance...',
-    'Génération des interprétations probabilistes...',
-    'Finalisation du rapport personnalisé...',
+    'Initializing analysis...',
+    'Detecting observable signals...',
+    'Analyzing timing and tone...',
+    'Evaluating behavioral consistency...',
+    'Mapping relational dynamics...',
+    'Calculating confidence scores...',
+    'Generating probabilistic interpretations...',
+    'Finalizing personalized report...',
   ]
   let stepIdx = 0
 
@@ -328,12 +328,12 @@ function initProcessingPage() {
         clearInterval(progressInterval)
         if (progressBar) progressBar.style.width = '100%'
         if (progressPct) progressPct.textContent = '100%'
-        if (stepText) stepText.textContent = '✅ Analyse terminée — rapport prêt !'
+        if (stepText) stepText.textContent = '✅ Analysis complete — report ready!'
         setTimeout(() => window.location.href = `/result/${analysisId}`, 600)
       } else if (data.status === 'failed') {
         clearInterval(progressInterval)
-        if (stepText) stepText.textContent = 'Analyse temporairement indisponible.'
-        showToast('Erreur lors de l\'analyse. Votre crédit est préservé.', 'error')
+        if (stepText) stepText.textContent = 'Analysis temporarily unavailable.'
+        showToast('Analysis error. Your credit is preserved.', 'error')
       } else if (data.status === 'blocked') {
         clearInterval(progressInterval)
         window.location.href = `/result/${analysisId}`
@@ -341,7 +341,7 @@ function initProcessingPage() {
         setTimeout(pollResult, 2000)
       } else {
         clearInterval(progressInterval)
-        if (stepText) stepText.textContent = 'Délai dépassé. Vérification...'
+        if (stepText) stepText.textContent = 'Timeout. Checking...'
         setTimeout(pollResult, 5000)
       }
     } catch {
@@ -371,7 +371,7 @@ function initResultPage() {
   const analysisId = document.body.dataset.analysisId
 
   on(upsellBtn, 'click', async () => {
-    setLoading(upsellBtn, true, '⏳ Redirection vers le paiement...')
+    setLoading(upsellBtn, true, '⏳ Redirecting to payment...')
     try {
       const res = await fetch('/api/create-upsell-session', {
         method: 'POST',
@@ -382,11 +382,11 @@ function initResultPage() {
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl
       } else {
-        showToast('Erreur lors du paiement', 'error')
+        showToast('Payment error', 'error')
         setLoading(upsellBtn, false)
       }
     } catch {
-      showToast('Erreur de connexion', 'error')
+      showToast('Connection error', 'error')
       setLoading(upsellBtn, false)
     }
   })
@@ -397,10 +397,10 @@ function initResultPage() {
     const resultText = $('#result-summary')?.textContent
     if (resultText) {
       navigator.clipboard.writeText(resultText).then(() => {
-        showToast('✅ Résumé copié !', 'success')
+        showToast('✅ Summary copied!', 'success')
         if (copyBtn) {
-          copyBtn.innerHTML = '<i class="fas fa-check mr-1"></i> Copié !'
-          setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copier le résumé' }, 2000)
+          copyBtn.innerHTML = '<i class="fas fa-check mr-1"></i> Copied!'
+          setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy summary' }, 2000)
         }
       })
     }
@@ -428,7 +428,7 @@ function initLeadCapture() {
     if (!email) return
 
     const submitBtn = leadForm.querySelector('[type="submit"]')
-    if (submitBtn) { submitBtn.textContent = '⏳ Envoi...'; submitBtn.disabled = true }
+    if (submitBtn) { submitBtn.textContent = '⏳ Sending...'; submitBtn.disabled = true }
 
     try {
       await fetch('/api/leads', {
@@ -436,15 +436,15 @@ function initLeadCapture() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, source: 'landing_lead_magnet' }),
       })
-      showToast('✅ Guide envoyé ! Vérifiez votre boîte.', 'success')
+      showToast('✅ Guide sent! Check your inbox.', 'success')
       leadForm.reset()
       // Replace form with success message
       leadForm.innerHTML = `<div class="text-center py-2">
-        <div class="text-green-400 font-bold text-sm"><i class="fas fa-check-circle mr-1"></i>Guide envoyé à ${email}</div>
-        <div class="text-gray-500 text-xs mt-1">Vérifiez votre boîte (et vos spams)</div>
+        <div class="text-green-400 font-bold text-sm"><i class="fas fa-check-circle mr-1"></i>Guide sent to ${email}</div>
+        <div class="text-gray-500 text-xs mt-1">Check your inbox (and spam folder)</div>
       </div>`
     } catch {
-      if (submitBtn) { submitBtn.textContent = 'Recevoir le guide →'; submitBtn.disabled = false }
+      if (submitBtn) { submitBtn.textContent = 'Get the guide →'; submitBtn.disabled = false }
     }
   })
 }

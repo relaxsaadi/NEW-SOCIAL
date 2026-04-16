@@ -45,7 +45,7 @@ checkout.post('/api/create-checkout-session', async (c) => {
         offerType,
         mode: mode ?? '',
         contextType: contextType ?? '',
-        locale: locale ?? 'fr',
+        locale: locale ?? 'en',
       },
     }
 
@@ -241,7 +241,7 @@ checkout.post('/api/create-upsell-session', async (c) => {
           unit_amount: 900,
           product_data: {
             name: 'Reply Generator',
-            description: 'Générer la réponse parfaite — 3 variations de ton',
+            description: 'Generate the perfect reply — 3 tone variations',
           },
         },
         quantity: 1,

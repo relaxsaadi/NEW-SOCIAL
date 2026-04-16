@@ -106,7 +106,7 @@ async function runAnalysis(
 
   while (attempt < maxAttempts) {
     try {
-      result = await callLLM(llmConfig, { ...input, language: 'fr' })
+      result = await callLLM(llmConfig, { ...input, language: 'en' })
       break
     } catch (e) {
       attempt++
@@ -206,15 +206,15 @@ analyze.get('/api/result/:id', async (c) => {
     return c.json({
       status: 'blocked',
       reason: 'SAFETY_POLICY',
-      message: 'Ce contenu ne peut pas être analysé. Si vous traversez une période difficile, des ressources sont disponibles.',
-      resources: ['https://www.3114.fr', 'https://www.psychologues.org'],
+      message: 'This content cannot be analyzed. If you are going through a difficult time, resources are available.',
+      resources: ['https://988lifeline.org', 'https://www.psychologytoday.com'],
     })
   }
 
   if (analysis.status === 'failed') {
     return c.json({
       status: 'failed',
-      message: 'Analyse temporairement indisponible — votre crédit est préservé.',
+      message: 'Analysis temporarily unavailable — your credit is preserved.',
     })
   }
 
@@ -288,7 +288,7 @@ analyze.post('/api/generate-reply', async (c) => {
       goal: analysis.goal,
       inputText: analysis.input_text,
       extraContext: analysis.extra_context,
-      language: 'fr',
+      language: 'en',
     })
 
     const r = result as Record<string, unknown>

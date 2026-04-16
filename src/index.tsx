@@ -90,7 +90,7 @@ app.get('/intake/:analysisId', async (c) => {
   ).bind(analysisId).first<{ id: string; status: string; offer_type: string; mode: string }>()
 
   if (!analysis) {
-    return c.html(errorPage('Analyse introuvable', 'Cet lien est invalide ou expiré.'))
+    return c.html(errorPage('Analysis not found', 'This link is invalid or expired.'))
   }
 
   if (analysis.status === 'completed') {
@@ -102,7 +102,7 @@ app.get('/intake/:analysisId', async (c) => {
   }
 
   if (!['paid', 'intake_pending', 'failed'].includes(analysis.status)) {
-    return c.html(errorPage('Paiement non validé', 'Votre paiement n\'a pas encore été confirmé. Veuillez patienter quelques secondes.'))
+    return c.html(errorPage('Payment not verified', 'Your payment has not been confirmed yet. Please wait a few seconds.'))
   }
 
   // Mark as intake_pending
@@ -121,7 +121,7 @@ app.get('/processing/:analysisId', async (c) => {
     `SELECT id, status FROM analyses WHERE id = ?`
   ).bind(analysisId).first<{ id: string; status: string }>()
 
-  if (!analysis) return c.html(errorPage('Introuvable', 'Cette analyse n\'existe pas.'))
+  if (!analysis) return c.html(errorPage('Not found', 'This analysis does not exist.'))
 
   if (analysis.status === 'completed') return c.redirect(`/result/${analysisId}`)
 
@@ -142,7 +142,7 @@ app.get('/result/:analysisId', async (c) => {
     confidence_score: number | null
   }>()
 
-  if (!analysis) return c.html(errorPage('Introuvable', 'Cette analyse n\'existe pas.'))
+  if (!analysis) return c.html(errorPage('Not found', 'This analysis does not exist.'))
   if (analysis.status === 'generating') return c.redirect(`/processing/${analysisId}`)
   if (analysis.status === 'pending_payment' || analysis.status === 'paid' || analysis.status === 'intake_pending') {
     return c.redirect(`/intake/${analysisId}`)
@@ -170,8 +170,8 @@ app.get('/upsell/:analysisId', async (c) => {
 })
 
 // Legal pages
-app.get('/privacy', (c) => c.html(legalPage('Politique de Confidentialité', privacyContent())))
-app.get('/terms', (c) => c.html(legalPage('Conditions d\'Utilisation', termsContent())))
+app.get('/privacy', (c) => c.html(legalPage('Privacy Policy', privacyContent())))
+app.get('/terms', (c) => c.html(legalPage('Terms of Use', termsContent())))
 app.get('/legal', (c) => c.redirect('/terms'))
 
 // ── HTML Templates ────────────────────────────────────────────────────────────
@@ -210,8 +210,8 @@ const HEAD = (title: string) => `
 
 function landingPage(): string {
   return `<!DOCTYPE html>
-<html lang="fr" class="scroll-smooth">
-${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
+<html lang="en" class="scroll-smooth">
+${HEAD('Stop overthinking what that message really means')}
 <body class="bg-[#0a0a0a] text-gray-100 font-sans" data-page="landing">
 
   <!-- Exit Intent Popup -->
@@ -353,27 +353,27 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
       <div class="glass-card rounded-2xl p-6 border border-violet-500/20">
         <!-- Input -->
         <div class="bg-gray-900/80 border border-gray-700 rounded-xl p-4 mb-5">
-          <div class="text-gray-500 text-xs mb-2 font-mono">MESSAGE SOUMIS</div>
-          <p class="text-gray-200 text-sm italic">"Il m'a répondu 'Ok.' après 3 jours de silence... avant il répondait toujours en moins d'une heure. Je ne sais plus quoi penser."</p>
+          <div class="text-gray-500 text-xs mb-2 font-mono">MESSAGE SUBMITTED</div>
+          <p class="text-gray-200 text-sm italic">"He replied 'Ok.' after 3 days of silence... he used to always respond in under an hour. I don't know what to think anymore."</p>
         </div>
         <!-- Output preview -->
         <div class="space-y-3">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Intérêt réel</span>
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Real interest</span>
             <div class="flex items-center gap-2 w-40">
               <div class="flex-1 bg-gray-800 rounded-full h-2.5"><div class="bg-red-500 h-2.5 rounded-full" style="width:22%"></div></div>
               <span class="font-mono text-sm font-bold text-red-400">22/100</span>
             </div>
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Effort fourni</span>
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Effort given</span>
             <div class="flex items-center gap-2 w-40">
               <div class="flex-1 bg-gray-800 rounded-full h-2.5"><div class="bg-red-500 h-2.5 rounded-full" style="width:8%"></div></div>
               <span class="font-mono text-sm font-bold text-red-400">8/100</span>
             </div>
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Clarté du signal</span>
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Signal clarity</span>
             <div class="flex items-center gap-2 w-40">
               <div class="flex-1 bg-gray-800 rounded-full h-2.5"><div class="bg-amber-400 h-2.5 rounded-full" style="width:85%"></div></div>
               <span class="font-mono text-sm font-bold text-amber-400">85/100</span>
@@ -381,24 +381,24 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
           </div>
         </div>
         <div class="mt-5 bg-violet-950/60 border border-violet-700/40 rounded-xl p-4">
-          <div class="text-xs text-violet-400 font-bold mb-2 uppercase tracking-wider">VERDICT · 82% de confiance</div>
-          <p class="text-white font-semibold mb-2">Désengagement progressif — signal de distance volontaire.</p>
-          <p class="text-gray-300 text-sm">La rupture de pattern (de 1h à 3 jours) combinée à la réponse monosyllabique représente un retrait émotionnel clair. Ce n'est pas de la timidité.</p>
+          <div class="text-xs text-violet-400 font-bold mb-2 uppercase tracking-wider">VERDICT · 82% confidence</div>
+          <p class="text-white font-semibold mb-2">Progressive disengagement — deliberate distancing signal.</p>
+          <p class="text-gray-300 text-sm">The pattern break (from 1 hour to 3 days) combined with the monosyllabic reply represents a clear emotional withdrawal. This is not shyness.</p>
         </div>
         <div class="mt-4 bg-green-950/40 border border-green-800/30 rounded-xl p-3">
-          <div class="text-xs text-green-400 font-bold mb-1">ACTION RECOMMANDÉE</div>
-          <p class="text-sm text-gray-200">Ne relancez pas. Miroir son niveau d'investissement. Votre silence a plus de valeur que votre message.</p>
+          <div class="text-xs text-green-400 font-bold mb-1">RECOMMENDED ACTION</div>
+          <p class="text-sm text-gray-200">Don't chase. Mirror their level of investment. Your silence is worth more than your message.</p>
         </div>
         <!-- Blur effect on rest to tease -->
         <div class="mt-4 relative overflow-hidden rounded-xl">
           <div class="filter blur-sm opacity-50 bg-gray-900 border border-gray-800 rounded-xl p-3 text-xs text-gray-400 space-y-1">
-            <div>+ 3 signaux observables détaillés</div>
-            <div>+ 2 lectures alternatives (15% burnout, 3% test)</div>
-            <div>+ 3 suggestions de réponse (Soft / Direct / Détaché)</div>
+            <div>+ 3 detailed observable signals</div>
+            <div>+ 2 alternative readings (15% burnout, 3% test)</div>
+            <div>+ 3 reply suggestions (Soft / Direct / Detached)</div>
           </div>
           <div class="absolute inset-0 flex items-center justify-center">
             <a href="#pricing" class="bg-violet-600 hover:bg-violet-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-xl transition-colors">
-              Obtenir mon analyse complète →
+              Get my full analysis →
             </a>
           </div>
         </div>
@@ -413,10 +413,10 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
     <div class="max-w-4xl mx-auto">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         ${[
-          { val: '2 847', label: 'Analyses livrées', icon: 'fa-chart-bar', color: 'violet' },
-          { val: '94%', label: 'Taux de satisfaction', icon: 'fa-heart', color: 'green' },
-          { val: '27s', label: 'Temps moyen de réponse', icon: 'fa-bolt', color: 'amber' },
-          { val: '4.9/5', label: 'Note moyenne', icon: 'fa-star', color: 'blue' },
+          { val: '2 847', label: 'Analyses delivered', icon: 'fa-chart-bar', color: 'violet' },
+          { val: '94%', label: 'Satisfaction rate', icon: 'fa-heart', color: 'green' },
+          { val: '27s', label: 'Average response time', icon: 'fa-bolt', color: 'amber' },
+          { val: '4.9/5', label: 'Average rating', icon: 'fa-star', color: 'blue' },
         ].map(s => `
         <div class="glass-card rounded-xl p-4 text-center border border-white/5">
           <div class="text-${s.color}-400 text-lg mb-1"><i class="fas ${s.icon}"></i></div>
@@ -434,24 +434,24 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
     <div class="max-w-5xl mx-auto">
       <div class="text-center mb-10">
         <div class="inline-block bg-green-900/30 border border-green-700/30 text-green-300 text-xs px-3 py-1 rounded-full mb-4 font-semibold">
-          <i class="fas fa-check-circle mr-1"></i>Témoignages vérifiés
+          <i class="fas fa-check-circle mr-1"></i>Verified testimonials
         </div>
-        <h2 class="text-2xl font-black text-white mb-2">Ce qu'ils ont découvert</h2>
-        <p class="text-gray-400 text-sm">Des vraies personnes. De vraies situations. De vrais résultats.</p>
+        <h2 class="text-2xl font-black text-white mb-2">What they discovered</h2>
+        <p class="text-gray-400 text-sm">Real people. Real situations. Real results.</p>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
         ${[
           {
-            quote: '"J\'attendais une réponse de mon copain depuis 4 jours. SST m\'a dit exactement ce que mon instinct sentait mais que je refusais de voir. J\'ai arrêté d\'attendre. 2 heures de clarté au lieu de 2 semaines d\'angoisse."',
-            name: 'Sarah M.', role: 'Dating — Quick Decode', stars: 5, outcome: 'A arrêté d\'attendre en vain'
+            quote: '"I\'d been waiting for my boyfriend\'s reply for 4 days. Signal Decoder told me exactly what my gut was feeling but I refused to see. I stopped waiting. 2 hours of clarity instead of 2 weeks of anxiety."',
+            name: 'Sarah M.', role: 'Dating — Quick Decode', stars: 5, outcome: 'Stopped waiting in vain'
           },
           {
-            quote: '"Mon manager m\'a envoyé un email de 2 lignes après une présentation. J\'étais dans le flou total. L\'analyse m\'a donné la lecture exacte et la réponse parfaite. Réunion de crise annulée, promoton toujours d\'actualité."',
-            name: 'Thomas D.', role: 'Pro — Deep Read', stars: 5, outcome: 'A évité une situation professionnelle critique'
+            quote: '"My manager sent me a 2-line email after a presentation. I was completely lost. The analysis gave me the exact reading and the perfect reply. Crisis meeting cancelled, promotion still on track."',
+            name: 'Thomas D.', role: 'Work — Deep Read', stars: 5, outcome: 'Avoided a critical professional situation'
           },
           {
-            quote: '"J\'ai collé 3 semaines de messages. L\'IA a détecté un pattern de breadcrumbing en 30 secondes. J\'avais cherché cette clarté pendant des mois avec mes amies sans jamais l\'avoir. Maintenant j\'ai avancé."',
-            name: 'Léa K.', role: 'Dating — Pattern Analysis', stars: 5, outcome: 'A identifié un pattern en 30 secondes'
+            quote: '"I pasted 3 weeks of messages. The AI detected a breadcrumbing pattern in 30 seconds. I\'d been looking for that clarity for months with my friends and never got it. Now I\'ve moved on."',
+            name: 'Léa K.', role: 'Dating — Pattern Analysis', stars: 5, outcome: 'Identified a pattern in 30 seconds'
           },
         ].map(t => `
         <div class="glass-card rounded-2xl p-5 border border-white/5 flex flex-col">
@@ -472,11 +472,11 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
       <!-- Mini social proof strip -->
       <div class="flex flex-wrap items-center justify-center gap-6 text-gray-500 text-xs">
         ${[
-          { name: 'M.C.', text: '"Verdict juste à 95%"' },
-          { name: 'J.B.', text: '"Meilleure décision que j\'ai prise"' },
-          { name: 'R.T.', text: '"Mon psy aurait mis 3 séances"' },
-          { name: 'A.L.', text: '"Plus objectif que mes amis"' },
-          { name: 'P.V.', text: '"J\'aurais dû l\'utiliser avant"' },
+          { name: 'M.C.', text: '"Verdict was 95% accurate"' },
+          { name: 'J.B.', text: '"Best decision I ever made"' },
+          { name: 'R.T.', text: '"My therapist would have taken 3 sessions"' },
+          { name: 'A.L.', text: '"More objective than my friends"' },
+          { name: 'P.V.', text: '"I should have used this sooner"' },
         ].map(r => `
         <div class="flex items-center gap-1.5">
           <div class="w-6 h-6 bg-gray-800 rounded-full flex items-center justify-center text-xs font-bold text-gray-400">${r.name.charAt(0)}</div>
@@ -492,14 +492,14 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
   <section id="how-it-works" class="px-4 py-16 border-t border-white/5">
     <div class="max-w-4xl mx-auto">
       <div class="text-center mb-10">
-        <h2 class="text-2xl font-black text-white mb-2">Comment ça marche</h2>
-        <p class="text-gray-400 text-sm">3 étapes. 30 secondes. Aucun compte requis.</p>
+        <h2 class="text-2xl font-black text-white mb-2">How it works</h2>
+        <p class="text-gray-400 text-sm">3 steps. 30 seconds. No account required.</p>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         ${[
-          { n:'01', icon:'fa-credit-card', color:'violet', title:'Payez une fois', desc:'Choisissez votre niveau d\'analyse. Un seul paiement. Pas d\'abonnement. Pas de surprise.' },
-          { n:'02', icon:'fa-paste', color:'blue', title:'Collez votre situation', desc:'Message, email, situation sociale. Ajoutez le contexte. Notre IA fait le reste en 30 secondes.' },
-          { n:'03', icon:'fa-file-alt', color:'green', title:'Lisez votre rapport', desc:'Scores, verdict, lectures alternatives, action recommandée. Tout ce que vous avez besoin de savoir.' },
+          { n:'01', icon:'fa-credit-card', color:'violet', title:'Pay once', desc:'Choose your analysis level. One payment. No subscription. No surprises.' },
+          { n:'02', icon:'fa-paste', color:'blue', title:'Paste your situation', desc:'Message, email, social situation. Add context. Our AI does the rest in 30 seconds.' },
+          { n:'03', icon:'fa-file-alt', color:'green', title:'Read your report', desc:'Scores, verdict, alternative readings, recommended action. Everything you need to know.' },
         ].map(s => `
         <div class="relative">
           <div class="glass-card rounded-2xl p-6 text-center h-full">
@@ -522,12 +522,12 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
     <div class="max-w-5xl mx-auto">
       <div class="text-center mb-4">
         <div class="inline-block bg-red-900/30 border border-red-700/30 text-red-300 text-xs px-3 py-1 rounded-full mb-4 font-semibold">
-          ⚡ Offre disponible maintenant — Pas de liste d'attente
+          ⚡ Available now — No waitlist
         </div>
         <h2 class="text-3xl sm:text-4xl font-black text-white mb-3">
-          Choisissez votre niveau de clarté
+          Choose your level of clarity
         </h2>
-        <p class="text-gray-400 max-w-xl mx-auto">Imaginez combien de temps, d'énergie et de décisions ratées vous coûte l'incertitude. Ces analyses coûtent moins qu'un café pour barista.</p>
+        <p class="text-gray-400 max-w-xl mx-auto">Think about how much time, energy, and bad decisions uncertainty is costing you. These analyses cost less than a barista coffee.</p>
       </div>
 
       <!-- Pricing comparison header -->
@@ -537,24 +537,24 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
         <div class="glass-card rounded-2xl p-6 border border-gray-700/50 hover:border-violet-500/40 transition-all">
           <div class="text-gray-400 text-xs font-mono mb-3 uppercase tracking-wider">Quick Decode</div>
           <!-- Value stack anchoring -->
-          <div class="text-gray-600 text-sm line-through mb-1">Valeur réelle : 90€</div>
-          <div class="text-4xl font-black text-white mb-1">19€</div>
-          <div class="text-gray-400 text-xs mb-5">Réponse claire sur un message unique</div>
+          <div class="text-gray-600 text-sm line-through mb-1">Real value: €90</div>
+          <div class="text-4xl font-black text-white mb-1">€19</div>
+          <div class="text-gray-400 text-xs mb-5">Clear answer on a single message</div>
           <div class="space-y-2 mb-6">
             ${[
-              ['fa-check', 'violet', 'Verdict avec score de confiance'],
-              ['fa-check', 'violet', '3 signaux observables décodés'],
-              ['fa-check', 'violet', 'Lecture principale + probabilité'],
-              ['fa-check', 'violet', '2 lectures alternatives'],
-              ['fa-check', 'violet', 'Action recommandée concrète'],
-              ['fa-check', 'violet', 'Rapport prêt en 30 secondes'],
+              ['fa-check', 'violet', 'Verdict with confidence score'],
+              ['fa-check', 'violet', '3 observable signals decoded'],
+              ['fa-check', 'violet', 'Main reading + probability'],
+              ['fa-check', 'violet', '2 alternative readings'],
+              ['fa-check', 'violet', 'Concrete recommended action'],
+              ['fa-check', 'violet', 'Report ready in 30 seconds'],
             ].map(([ic, col, txt]) =>
               `<li class="flex items-start gap-2 text-sm text-gray-300 list-none"><i class="fas ${ic} text-${col}-400 mt-0.5 text-xs flex-shrink-0"></i>${txt}</li>`
             ).join('')}
           </div>
           <button data-offer="quick_decode"
             class="w-full bg-gray-800 hover:bg-violet-700 border border-gray-700 hover:border-violet-500 text-white py-3.5 rounded-xl font-bold transition-all cursor-pointer text-sm">
-            Obtenir ma clarté — 19€ →
+            Get my clarity — €19 →
           </button>
         </div>
 
@@ -563,53 +563,53 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
           <div class="bg-[#111] rounded-2xl p-6 h-full">
             <!-- Badge -->
             <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-violet-600 to-blue-600 text-white text-xs px-4 py-1.5 rounded-full font-black uppercase tracking-wider shadow-lg">
-              LE PLUS POPULAIRE
+              MOST POPULAR
             </div>
             <div class="text-violet-400 text-xs font-mono mb-3 uppercase tracking-wider">Deep Read</div>
-            <div class="text-gray-600 text-sm line-through mb-1">Valeur réelle : 290€</div>
-            <div class="text-4xl font-black text-white mb-1">29€</div>
-            <div class="text-gray-400 text-xs mb-5">Analyse complète — situations complexes</div>
+            <div class="text-gray-600 text-sm line-through mb-1">Real value: €290</div>
+            <div class="text-4xl font-black text-white mb-1">€29</div>
+            <div class="text-gray-400 text-xs mb-5">Full analysis — complex situations</div>
             <div class="space-y-2 mb-6">
               ${[
-                ['fa-check', 'violet', 'Tout ce qu\'inclut Quick Decode'],
-                ['fa-check', 'violet', 'Dynamique relationnelle analysée'],
-                ['fa-check', 'violet', 'Non-dits et sous-textes détectés'],
-                ['fa-check', 'violet', 'Vos biais cognitifs identifiés'],
-                ['fa-check', 'violet', '3 suggestions de réponse rédigées'],
-                ['fa-check', 'violet', 'Stratégie actionnable immédiate'],
+                ['fa-check', 'violet', 'Everything in Quick Decode'],
+                ['fa-check', 'violet', 'Relational dynamics analyzed'],
+                ['fa-check', 'violet', 'Hidden meanings & subtext detected'],
+                ['fa-check', 'violet', 'Your cognitive biases identified'],
+                ['fa-check', 'violet', '3 written reply suggestions'],
+                ['fa-check', 'violet', 'Immediate actionable strategy'],
               ].map(([ic, col, txt]) =>
                 `<li class="flex items-start gap-2 text-sm text-gray-200 list-none"><i class="fas ${ic} text-${col}-400 mt-0.5 text-xs flex-shrink-0"></i>${txt}</li>`
               ).join('')}
             </div>
             <button data-offer="deep_read"
               class="w-full bg-violet-600 hover:bg-violet-500 text-white py-4 rounded-xl font-black transition-all cursor-pointer pulse-glow text-base">
-              Obtenir mon Deep Read — 29€ →
+              Get my Deep Read — €29 →
             </button>
-            <p class="text-center text-gray-600 text-xs mt-2">Satisfait ou remboursé</p>
+            <p class="text-center text-gray-600 text-xs mt-2">Money-back guarantee</p>
           </div>
         </div>
 
         <!-- Pattern Analysis -->
         <div class="glass-card rounded-2xl p-6 border border-gray-700/50 hover:border-violet-500/40 transition-all">
           <div class="text-gray-400 text-xs font-mono mb-3 uppercase tracking-wider">Pattern Analysis</div>
-          <div class="text-gray-600 text-sm line-through mb-1">Valeur réelle : 490€</div>
-          <div class="text-4xl font-black text-white mb-1">59€</div>
-          <div class="text-gray-400 text-xs mb-5">Comprendre une relation sur la durée</div>
+          <div class="text-gray-600 text-sm line-through mb-1">Real value: €490</div>
+          <div class="text-4xl font-black text-white mb-1">€59</div>
+          <div class="text-gray-400 text-xs mb-5">Understand a relationship over time</div>
           <div class="space-y-2 mb-6">
             ${[
-              ['fa-check', 'violet', 'Analyse de l\'historique complet'],
-              ['fa-check', 'violet', 'Tendances émotionnelles (chaud/froid)'],
-              ['fa-check', 'violet', 'Asymétrie d\'effort (qui s\'investit)'],
-              ['fa-check', 'violet', 'Dynamique de pouvoir détectée'],
-              ['fa-check', 'violet', 'Breadcrumbing / manipulation détectés'],
-              ['fa-check', 'violet', 'Stratégie relationnelle complète'],
+              ['fa-check', 'violet', 'Full history analysis'],
+              ['fa-check', 'violet', 'Emotional trends (hot/cold)'],
+              ['fa-check', 'violet', 'Effort asymmetry (who invests more)'],
+              ['fa-check', 'violet', 'Power dynamics detected'],
+              ['fa-check', 'violet', 'Breadcrumbing / manipulation detected'],
+              ['fa-check', 'violet', 'Complete relationship strategy'],
             ].map(([ic, col, txt]) =>
               `<li class="flex items-start gap-2 text-sm text-gray-300 list-none"><i class="fas ${ic} text-${col}-400 mt-0.5 text-xs flex-shrink-0"></i>${txt}</li>`
             ).join('')}
           </div>
           <button data-offer="pattern_analysis"
             class="w-full bg-gray-800 hover:bg-violet-700 border border-gray-700 hover:border-violet-500 text-white py-3.5 rounded-xl font-bold transition-all cursor-pointer text-sm">
-            Analyser mon pattern — 59€ →
+            Analyze my pattern — €59 →
           </button>
         </div>
       </div>
@@ -620,8 +620,8 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
           <i class="fas fa-shield-alt text-green-400 text-2xl"></i>
         </div>
         <div>
-          <h3 class="font-black text-white text-lg mb-1">Garantie Satisfaction — Remboursement immédiat</h3>
-          <p class="text-gray-300 text-sm">Si votre analyse ne vous apporte pas de clarté réelle, envoyez un email en 24h. Nous remboursons sans question. Zéro risque.</p>
+          <h3 class="font-black text-white text-lg mb-1">Satisfaction Guarantee — Instant Refund</h3>
+          <p class="text-gray-300 text-sm">If your analysis doesn't give you real clarity, send an email within 24 hours. We refund — no questions asked. Zero risk.</p>
         </div>
       </div>
     </div>
@@ -633,23 +633,23 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
   <section class="px-4 py-16 border-t border-white/5">
     <div class="max-w-3xl mx-auto">
       <div class="text-center mb-10">
-        <h2 class="text-2xl font-black text-white mb-2">Toutes vos questions. Réponses directes.</h2>
-        <p class="text-gray-500 text-sm">Parce que vous méritez la vérité, pas du marketing.</p>
+        <h2 class="text-2xl font-black text-white mb-2">All your questions. Straight answers.</h2>
+        <p class="text-gray-500 text-sm">Because you deserve the truth, not marketing fluff.</p>
       </div>
 
       <!-- Comparison table (Hormozi: vs alternatives) -->
       <div class="glass-card rounded-2xl border border-gray-800 overflow-hidden mb-8">
         <div class="grid grid-cols-4 text-xs font-bold text-center bg-gray-900/60">
-          <div class="p-3 text-left text-gray-400">Méthode</div>
-          <div class="p-3 text-gray-400">Coût</div>
-          <div class="p-3 text-gray-400">Délai</div>
-          <div class="p-3 text-violet-400">Objectivité</div>
+          <div class="p-3 text-left text-gray-400">Method</div>
+          <div class="p-3 text-gray-400">Cost</div>
+          <div class="p-3 text-gray-400">Delay</div>
+          <div class="p-3 text-violet-400">Objectivity</div>
         </div>
         ${[
-          { method: 'Demander à des amis', cost: '0€ mais...',  time: '2-48h', obj: '❌ Biais émotionnel', highlight: false },
-          { method: 'Séance de coaching',  cost: '80-200€',    time: '3-7 jours', obj: '✓ Partiel', highlight: false },
-          { method: 'Séance psy',           cost: '60-120€',   time: '1-3 semaines', obj: '✓ Bon', highlight: false },
-          { method: '🧠 SST (notre outil)', cost: 'dès 19€',   time: '< 5 minutes', obj: '✅ Aucun biais', highlight: true },
+          { method: 'Ask friends', cost: '€0 but...',  time: '2-48h', obj: '❌ Emotional bias', highlight: false },
+          { method: 'Coaching session',  cost: '€80-200',    time: '3-7 days', obj: '✓ Partial', highlight: false },
+          { method: 'Therapy session',           cost: '€60-120',   time: '1-3 weeks', obj: '✓ Good', highlight: false },
+          { method: '🧠 Signal Decoder', cost: 'from €19',   time: '< 5 minutes', obj: '✅ Zero bias', highlight: true },
         ].map(r => `
         <div class="grid grid-cols-4 text-xs text-center border-t border-gray-800 ${r.highlight ? 'bg-violet-900/20' : ''}">
           <div class="p-3 text-left ${r.highlight ? 'text-white font-bold' : 'text-gray-400'}">${r.method}</div>
@@ -663,28 +663,28 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
       <div class="space-y-3" id="faq">
         ${[
           {
-            q: 'Est-ce que l\'IA peut vraiment analyser un message humain ?',
-            a: 'Notre IA a été entraînée spécifiquement pour identifier les signaux comportementaux — timing, ton, effort, cohérence. Elle ne lit pas dans les pensées. Elle analyse des <strong class="text-white">faits observables</strong> et leur probabilité d\'interprétation. C\'est exactement ce que ferait un expert en communication sociale, mais en 30 secondes.'
+            q: 'Can AI really analyze a human message?',
+            a: 'Our AI was specifically trained to identify behavioral signals — timing, tone, effort, consistency. It doesn\'t read minds. It analyzes <strong class="text-white">observable facts</strong> and their probability of interpretation. It\'s exactly what a social communication expert would do, but in 30 seconds.'
           },
           {
-            q: 'Et si le résultat est complètement à côté ?',
-            a: 'Remboursement immédiat, sans question, sans justification. Mais sur <strong class="text-white">2 847 analyses livrées</strong>, notre taux de satisfaction est de 94%. L\'IA est calibrée pour exprimer son niveau de confiance — elle vous dit quand elle est sûre et quand elle ne l\'est pas.'
+            q: 'What if the result is completely off?',
+            a: 'Instant refund, no questions asked, no justification needed. But across <strong class="text-white">2,847 analyses delivered</strong>, our satisfaction rate is 94%. The AI is calibrated to express its confidence level — it tells you when it\'s sure and when it\'s not.'
           },
           {
-            q: 'Mes messages sont-ils confidentiels ?',
-            a: 'Oui, totalement. Vos textes sont <strong class="text-white">chiffrés en transit</strong>, utilisés uniquement pour générer votre analyse, et automatiquement supprimés après 30 jours. Nous ne les stockons pas, ne les lisons pas, ne les vendons jamais. Conformité RGPD complète.'
+            q: 'Are my messages confidential?',
+            a: 'Yes, completely. Your texts are <strong class="text-white">encrypted in transit</strong>, used only to generate your analysis, and automatically deleted after 30 days. We don\'t store them, read them, or sell them. Ever. Full GDPR compliance.'
           },
           {
-            q: 'C\'est différent de demander à un ami ?',
-            a: 'Profondément différent. Vos amis vous aiment — et c\'est <em>précisément pour ça</em> qu\'ils ne peuvent pas être objectifs. Ils filtrent ce qu\'ils vous disent pour vous protéger. Notre IA n\'a <strong class="text-white">aucun biais émotionnel</strong> et sépare systématiquement les faits observables de l\'interprétation.'
+            q: 'Is this different from asking a friend?',
+            a: 'Profoundly different. Your friends love you — and that\'s <em>precisely why</em> they can\'t be objective. They filter what they tell you to protect you. Our AI has <strong class="text-white">zero emotional bias</strong> and systematically separates observable facts from interpretation.'
           },
           {
-            q: 'En combien de temps j\'ai mon résultat ?',
-            a: 'Le paiement : 30 secondes. Le formulaire : 2 minutes. L\'analyse : 20-45 secondes. <strong class="text-white">Total : moins de 5 minutes</strong> entre maintenant et votre réponse. Pendant ces 5 minutes, vous ruminez encore. Après, vous avez une direction claire.'
+            q: 'How fast do I get my result?',
+            a: 'Payment: 30 seconds. Form: 2 minutes. Analysis: 20-45 seconds. <strong class="text-white">Total: under 5 minutes</strong> from now to your answer. During those 5 minutes, you\'re still overthinking. After — you have a clear direction.'
           },
           {
-            q: 'Je veux juste un conseil, pas une analyse complète.',
-            a: 'Le Quick Decode à 19€ est fait pour ça. Un message unique, un verdict clair, une action recommandée. Pas de surcharge d\'information. Juste ce dont vous avez besoin pour prendre la bonne décision aujourd\'hui.'
+            q: 'I just want quick advice, not a full analysis.',
+            a: 'The Quick Decode at €19 is made for exactly that. One message, one clear verdict, one recommended action. No information overload. Just what you need to make the right decision today.'
           },
         ].map((faq, i) => `
         <div class="glass-card rounded-xl border border-gray-800">
@@ -707,22 +707,22 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
     <div class="max-w-2xl mx-auto">
       <div class="glass-card rounded-2xl p-8 border border-violet-500/20 text-center">
         <div class="inline-block bg-violet-900/40 border border-violet-700/30 text-violet-300 text-xs px-3 py-1.5 rounded-full mb-4 font-semibold">
-          GRATUIT
+          FREE
         </div>
         <h2 class="text-xl font-black text-white mb-2">
-          Pas encore prêt ? Recevez notre guide gratuit.
+          Not ready yet? Get our free guide.
         </h2>
         <p class="text-gray-400 text-sm mb-6">
-          <strong class="text-white">« Les 7 signaux qui ne mentent jamais »</strong> — Le guide que 1 200+ personnes ont téléchargé pour décoder les comportements sans outil payant.
+          <strong class="text-white">"The 7 Signals That Never Lie"</strong> — The guide that 1,200+ people have downloaded to decode behavior without a paid tool.
         </p>
         <form id="lead-form" class="flex flex-col sm:flex-row gap-3">
-          <input type="email" name="lead-email" placeholder="Votre email..." required
+          <input type="email" name="lead-email" placeholder="Your email..." required
             class="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-200 focus:outline-none focus:border-violet-500 text-sm placeholder-gray-500">
           <button type="submit" class="bg-violet-600 hover:bg-violet-500 text-white px-6 py-3 rounded-xl font-bold text-sm transition-colors cursor-pointer whitespace-nowrap">
-            Recevoir le guide →
+            Get the guide →
           </button>
         </form>
-        <p class="text-gray-600 text-xs mt-2">0 spam. Désabonnement en 1 clic.</p>
+        <p class="text-gray-600 text-xs mt-2">Zero spam. Unsubscribe in 1 click.</p>
       </div>
     </div>
   </section>
@@ -734,20 +734,20 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
     <div class="max-w-2xl mx-auto text-center">
       <div class="text-5xl mb-4">🧠</div>
       <h2 class="text-3xl sm:text-4xl font-black text-white mb-4">
-        Chaque heure que vous attendez est une heure<br>
-        <span class="gradient-text">à vous torturer inutilement.</span>
+        Every hour you wait is another hour<br>
+        <span class="gradient-text">torturing yourself for nothing.</span>
       </h2>
-      <p class="text-gray-400 mb-3 text-lg">La clarté que vous cherchez depuis des heures est à <strong class="text-white">29€</strong> et <strong class="text-white">5 minutes</strong> d'ici.</p>
-      <p class="text-gray-600 text-sm mb-8">Et si l'analyse ne vous aide pas : remboursement total. Zéro risque.</p>
+      <p class="text-gray-400 mb-3 text-lg">The clarity you've been searching for is <strong class="text-white">€29</strong> and <strong class="text-white">5 minutes</strong> away.</p>
+      <p class="text-gray-600 text-sm mb-8">And if the analysis doesn't help: full refund. Zero risk.</p>
       <a href="#pricing"
         class="inline-block bg-violet-600 hover:bg-violet-500 text-white px-12 py-5 rounded-2xl text-xl font-black transition-all pulse-glow shadow-2xl shadow-violet-900/60 mb-4">
-        Obtenir ma clarté maintenant →
+        Get my clarity now →
       </a>
       <div class="flex flex-wrap justify-center gap-x-6 gap-y-1 text-xs text-gray-600 mt-4">
-        <span>✓ Satisfait ou remboursé</span>
-        <span>✓ Résultat en &lt; 30 secondes</span>
-        <span>✓ Sans inscription</span>
-        <span>✓ Paiement Stripe sécurisé</span>
+        <span>✓ Money-back guarantee</span>
+        <span>✓ Result in &lt; 30 seconds</span>
+        <span>✓ No sign-up</span>
+        <span>✓ Secure Stripe payment</span>
       </div>
     </div>
   </section>
@@ -760,8 +760,8 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
         <span>Signal Decoder © 2026 — Strategixs SAS</span>
       </div>
       <div class="flex items-center gap-6">
-        <a href="/privacy" class="hover:text-gray-400 transition-colors">Confidentialité</a>
-        <a href="/terms" class="hover:text-gray-400 transition-colors">CGU</a>
+        <a href="/privacy" class="hover:text-gray-400 transition-colors">Privacy</a>
+        <a href="/terms" class="hover:text-gray-400 transition-colors">Terms</a>
       </div>
     </div>
   </footer>
@@ -781,13 +781,13 @@ ${HEAD('Arrêtez de vous torturer sur ce que ce message veut vraiment dire')}
 
 function checkoutSuccessPage(): string {
   return `<!DOCTYPE html>
-<html lang="fr">
-${HEAD('Paiement confirmé')}
+<html lang="en">
+${HEAD('Payment confirmed')}
 <body class="bg-[#0a0a0a] text-gray-100 font-sans min-h-screen flex items-center justify-center" data-page="checkout-success">
   <div class="text-center max-w-md px-6">
     <div id="checkout-spinner" class="w-16 h-16 border-4 border-violet-600 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-    <h1 class="text-2xl font-bold text-white mb-3">Paiement confirmé !</h1>
-    <p id="checkout-status" class="text-gray-400">Vérification en cours, redirection automatique...</p>
+    <h1 class="text-2xl font-bold text-white mb-3">Payment confirmed!</h1>
+    <p id="checkout-status" class="text-gray-400">Verifying, redirecting automatically...</p>
   </div>
   <script src="/static/app.js"></script>
 </body>
@@ -808,16 +808,16 @@ function intakePage(analysisId: string, offerType: string, defaultMode: string):
   }
 
   const modes = [
-    { id: 'message_decode', label: 'Message', icon: 'fa-comment', desc: 'Analyser un message' },
-    { id: 'situation_decode', label: 'Situation', icon: 'fa-user-friends', desc: 'Situation sociale' },
-    { id: 'dating_decode', label: 'Dating', icon: 'fa-heart', desc: 'Signaux romantiques' },
-    { id: 'workplace_decode', label: 'Pro', icon: 'fa-briefcase', desc: 'Dynamiques travail' },
-    { id: 'pattern_analysis', label: 'Pattern', icon: 'fa-chart-line', desc: 'Historique relation' },
+    { id: 'message_decode', label: 'Message', icon: 'fa-comment', desc: 'Analyze a message' },
+    { id: 'situation_decode', label: 'Situation', icon: 'fa-user-friends', desc: 'Social situation' },
+    { id: 'dating_decode', label: 'Dating', icon: 'fa-heart', desc: 'Romantic signals' },
+    { id: 'workplace_decode', label: 'Work', icon: 'fa-briefcase', desc: 'Work dynamics' },
+    { id: 'pattern_analysis', label: 'Pattern', icon: 'fa-chart-line', desc: 'Relationship history' },
   ]
 
   return `<!DOCTYPE html>
-<html lang="fr">
-${HEAD('Votre analyse est prête — Décrivez votre situation')}
+<html lang="en">
+${HEAD('Your analysis is ready — Describe your situation')}
 <body class="bg-[#0a0a0a] text-gray-100 font-sans min-h-screen py-8 px-4" data-page="intake">
   <div class="max-w-2xl mx-auto">
 
@@ -827,21 +827,21 @@ ${HEAD('Votre analyse est prête — Décrivez votre situation')}
         <div class="w-7 h-7 bg-green-600 rounded-full flex items-center justify-center shadow-lg shadow-green-900/50">
           <i class="fas fa-check text-white text-xs"></i>
         </div>
-        <span class="text-green-400 font-bold hidden sm:inline">Paiement ✓</span>
+        <span class="text-green-400 font-bold hidden sm:inline">Payment ✓</span>
       </div>
       <div class="flex-1 h-1 bg-gradient-to-r from-green-600 to-violet-600 mx-2 rounded-full"></div>
       <div class="flex items-center gap-2 flex-shrink-0">
         <div class="w-7 h-7 bg-violet-600 rounded-full flex items-center justify-center ring-2 ring-violet-400 shadow-lg shadow-violet-900/50">
           <span class="text-white font-black text-xs">2</span>
         </div>
-        <span class="text-white font-bold hidden sm:inline">Votre situation</span>
+        <span class="text-white font-bold hidden sm:inline">Your situation</span>
       </div>
       <div class="flex-1 h-1 bg-gray-800 mx-2 rounded-full"></div>
       <div class="flex items-center gap-2 flex-shrink-0">
         <div class="w-7 h-7 bg-gray-800 border border-gray-700 rounded-full flex items-center justify-center">
           <span class="text-gray-500 font-bold text-xs">3</span>
         </div>
-        <span class="text-gray-600 hidden sm:inline">Résultat</span>
+        <span class="text-gray-600 hidden sm:inline">Result</span>
       </div>
     </div>
 
@@ -857,10 +857,10 @@ ${HEAD('Votre analyse est prête — Décrivez votre situation')}
               <i class="fas ${offerIcons[offerType] || 'fa-bolt'} mr-1"></i>
               ${offerLabels[offerType] || offerType}
             </span>
-            <span class="text-gray-500 text-xs">Analyse prête à démarrer</span>
+            <span class="text-gray-500 text-xs">Analysis ready to start</span>
           </div>
           <p class="text-gray-400 text-xs mt-1">
-            Une étape encore — décrivez votre situation. <strong class="text-white">Résultat dans 30 secondes.</strong>
+            One more step — describe your situation. <strong class="text-white">Result in 30 seconds.</strong>
           </p>
         </div>
       </div>
@@ -869,10 +869,10 @@ ${HEAD('Votre analyse est prête — Décrivez votre situation')}
     <!-- Hook / re-engagement headline (Hormozi: remind them why they paid) -->
     <div class="mb-6">
       <h1 class="text-2xl sm:text-3xl font-black text-white mb-2">
-        La vérité sur cette situation<br>
-        <span class="text-violet-400">est à 2 minutes d'ici.</span>
+        The truth about this situation<br>
+        <span class="text-violet-400">is 2 minutes away.</span>
       </h1>
-      <p class="text-gray-400 text-sm">Soyez honnête — pas de filtre. Notre IA est objective, pas votre entourage. <strong class="text-white">Plus de détails = verdict plus précis.</strong></p>
+      <p class="text-gray-400 text-sm">Be honest — no filter. Our AI is objective, your friends aren't. <strong class="text-white">More details = more accurate verdict.</strong></p>
     </div>
 
     <form id="intake-form" data-analysis-id="${analysisId}" class="space-y-5">
@@ -882,7 +882,7 @@ ${HEAD('Votre analyse est prête — Décrivez votre situation')}
       <!-- Mode selector — visual, frictionless -->
       <div>
         <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-3">
-          Quel type de situation ? <span class="text-violet-400">*</span>
+          What type of situation? <span class="text-violet-400">*</span>
         </label>
         <div class="grid grid-cols-5 gap-2">
           ${modes.map(m => `
@@ -897,24 +897,24 @@ ${HEAD('Votre analyse est prête — Décrivez votre situation')}
       <!-- Context type + relationship duration (reduce cognitive load) -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Contexte relationnel</label>
+          <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Relationship context</label>
           <select name="contextType" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-200 focus:outline-none focus:border-violet-500 text-sm">
-            <option value="dating">❤️ Dating / Romantique</option>
-            <option value="work">💼 Professionnel</option>
-            <option value="friendship">👥 Amitié</option>
-            <option value="family">🏠 Famille</option>
+            <option value="dating">❤️ Dating / Romantic</option>
+            <option value="work">💼 Professional</option>
+            <option value="friendship">👥 Friendship</option>
+            <option value="family">🏠 Family</option>
             <option value="social">🌐 Social</option>
-            <option value="other">📝 Autre</option>
+            <option value="other">📝 Other</option>
           </select>
         </div>
         <div>
-          <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Durée de la relation</label>
+          <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Relationship duration</label>
           <select name="relationDuration" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-200 focus:outline-none focus:border-violet-500 text-sm">
-            <option value="new">🆕 Nouveau / Inconnu</option>
-            <option value="weeks">📅 Quelques semaines</option>
-            <option value="months">🗓️ Quelques mois</option>
-            <option value="years">⭐ Plus d'un an</option>
-            <option value="longtime">💎 Relation longue durée</option>
+            <option value="new">🆕 New / Unknown</option>
+            <option value="weeks">📅 A few weeks</option>
+            <option value="months">🗓️ A few months</option>
+            <option value="years">⭐ Over a year</option>
+            <option value="longtime">💎 Long-term relationship</option>
           </select>
         </div>
       </div>
@@ -923,7 +923,7 @@ ${HEAD('Votre analyse est prête — Décrivez votre situation')}
       <div>
         <div class="flex items-center justify-between mb-2">
           <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">
-            Message ou situation <span class="text-violet-400">*</span>
+            Message or situation <span class="text-violet-400">*</span>
           </label>
           <span id="char-count" class="text-gray-600 text-xs">0/5000</span>
         </div>
@@ -931,35 +931,35 @@ ${HEAD('Votre analyse est prête — Décrivez votre situation')}
         <div class="h-1 bg-gray-800 rounded-full mb-2 overflow-hidden">
           <div id="quality-bar" class="h-1 rounded-full transition-all duration-300 bg-red-600" style="width:0%"></div>
         </div>
-        <div id="quality-label" class="text-xs text-gray-600 mb-2">Qualité du signal : commencez à écrire...</div>
+        <div id="quality-label" class="text-xs text-gray-600 mb-2">Signal quality: start typing...</div>
         <textarea name="inputText" required rows="7" maxlength="5000"
-          placeholder="Collez ici le message exact, ou décrivez la situation avec le maximum de détails...
+          placeholder="Paste the exact message here, or describe the situation with as much detail as possible...
 
-Exemple : &quot;Il m'a répondu 'Ok.' après 3 jours de silence. Avant il répondait en moins d'une heure, sans exception. On se voit depuis 2 semaines. Ce changement m'inquiète.&quot;"
+Example: &quot;He replied 'Ok.' after 3 days of silence. He used to respond in under an hour, without exception. We've been seeing each other for 2 weeks. This change worries me.&quot;"
           class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3.5 text-gray-200 resize-none focus:outline-none focus:border-violet-500 transition-colors placeholder-gray-600 leading-relaxed text-sm"></textarea>
-        <p class="text-gray-600 text-xs mt-1.5"><i class="fas fa-lightbulb text-amber-500 mr-1"></i>Conseil : incluez le message exact + le comportement habituel pour un verdict maximal.</p>
+        <p class="text-gray-600 text-xs mt-1.5"><i class="fas fa-lightbulb text-amber-500 mr-1"></i>Tip: include the exact message + their usual behavior for the most accurate verdict.</p>
       </div>
 
       <!-- Extra context — optional but recommended -->
       <div>
         <div class="flex items-center justify-between mb-2">
           <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">
-            Contexte supplémentaire
+            Additional context
           </label>
-          <span class="text-violet-400 text-xs font-semibold">+40% de précision</span>
+          <span class="text-violet-400 text-xs font-semibold">+40% accuracy</span>
         </div>
         <textarea name="extraContext" rows="2"
-          placeholder="Ce qui a changé récemment, comportement habituel, événements passés importants..."
+          placeholder="What changed recently, usual behavior, important past events..."
           class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-200 resize-none focus:outline-none focus:border-violet-500 transition-colors placeholder-gray-600 text-sm"></textarea>
       </div>
 
       <!-- Goal — Hormozi: specificity creates clarity -->
       <div>
         <label class="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">
-          Ce que vous voulez vraiment savoir
+          What you really want to know
         </label>
         <input type="text" name="goal"
-          placeholder="Ex: Est-il/elle sincèrement intéressé(e) ou juste en train de me garder en option ?"
+          placeholder="E.g.: Are they genuinely interested or just keeping me as an option?"
           class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-gray-200 focus:outline-none focus:border-violet-500 transition-colors placeholder-gray-600 text-sm">
       </div>
 
@@ -967,12 +967,12 @@ Exemple : &quot;Il m'a répondu 'Ok.' après 3 jours de silence. Avant il répon
       <div class="pt-2">
         <button type="submit" id="submit-btn"
           class="w-full bg-violet-600 hover:bg-violet-500 text-white py-5 rounded-2xl font-black text-lg transition-all cursor-pointer shadow-xl shadow-violet-900/40 pulse-glow">
-          <i class="fas fa-bolt mr-2"></i>Lancer mon analyse maintenant →
+          <i class="fas fa-bolt mr-2"></i>Launch my analysis now →
         </button>
         <div class="flex flex-wrap justify-center gap-x-5 gap-y-1 text-xs text-gray-600 mt-3">
-          <span><i class="fas fa-clock mr-1"></i>Résultat en 30 secondes</span>
-          <span><i class="fas fa-lock mr-1"></i>Confidentiel</span>
-          <span><i class="fas fa-shield-alt mr-1"></i>Garanti ou remboursé</span>
+          <span><i class="fas fa-clock mr-1"></i>Result in 30 seconds</span>
+          <span><i class="fas fa-lock mr-1"></i>Confidential</span>
+          <span><i class="fas fa-shield-alt mr-1"></i>Guaranteed or refunded</span>
         </div>
       </div>
     </form>
@@ -984,8 +984,8 @@ Exemple : &quot;Il m'a répondu 'Ok.' après 3 jours de silence. Avant il répon
 
 function processingPage(analysisId: string): string {
   return `<!DOCTYPE html>
-<html lang="fr">
-${HEAD('Analyse en cours')}
+<html lang="en">
+${HEAD('Analysis in progress')}
 <body class="bg-[#0a0a0a] text-gray-100 font-sans min-h-screen flex items-center justify-center" data-page="processing" data-analysis-id="${analysisId}">
   <div class="text-center max-w-lg px-6">
     <!-- Animated visual -->
@@ -998,8 +998,8 @@ ${HEAD('Analyse en cours')}
       </div>
     </div>
 
-    <h1 class="text-2xl font-bold text-white mb-2">Analyse en cours...</h1>
-    <p id="step-text" class="text-gray-400 text-sm mb-8 font-mono">Initialisation de l'analyse...</p>
+    <h1 class="text-2xl font-bold text-white mb-2">Analysis in progress...</h1>
+    <p id="step-text" class="text-gray-400 text-sm mb-8 font-mono">Initializing analysis...</p>
 
     <!-- Progress bar -->
     <div class="bg-gray-900 rounded-full h-3 mb-2 overflow-hidden">
@@ -1026,20 +1026,20 @@ function resultPage(
 ): string {
   if (analysis.status === 'blocked') {
     return `<!DOCTYPE html>
-<html lang="fr">
-${HEAD('Contenu bloqué')}
+<html lang="en">
+${HEAD('Content blocked')}
 <body class="bg-[#0a0a0a] text-gray-100 font-sans min-h-screen flex items-center justify-center px-4" data-page="result" data-analysis-id="${analysisId}">
   <div class="max-w-md text-center">
     <div class="w-16 h-16 bg-amber-900/50 rounded-xl flex items-center justify-center mx-auto mb-4">
       <i class="fas fa-shield-alt text-amber-400 text-2xl"></i>
     </div>
-    <h1 class="text-2xl font-bold text-white mb-4">Contenu non analysable</h1>
-    <p class="text-gray-400 mb-6">Ce contenu ne peut pas être analysé conformément à notre politique de sécurité.</p>
+    <h1 class="text-2xl font-bold text-white mb-4">Content cannot be analyzed</h1>
+    <p class="text-gray-400 mb-6">This content cannot be analyzed in accordance with our safety policy.</p>
     <div class="bg-amber-900/20 border border-amber-800/30 rounded-xl p-4 mb-6 text-sm text-gray-300">
-      Si vous traversez une période difficile, des ressources sont disponibles 24h/24 :
-      <br><a href="tel:3114" class="text-amber-400 font-bold">3114</a> — Numéro national de prévention du suicide
+      If you are going through a difficult time, resources are available 24/7:
+      <br><a href="tel:988" class="text-amber-400 font-bold">988</a> — Suicide & Crisis Lifeline
     </div>
-    <a href="/" class="bg-violet-600 hover:bg-violet-500 text-white px-6 py-3 rounded-xl inline-block transition-colors">Retour à l'accueil</a>
+    <a href="/" class="bg-violet-600 hover:bg-violet-500 text-white px-6 py-3 rounded-xl inline-block transition-colors">Back to home</a>
   </div>
   <script src="/static/app.js"></script>
 </body>
@@ -1048,13 +1048,13 @@ ${HEAD('Contenu bloqué')}
 
   if (!result) {
     return `<!DOCTYPE html>
-<html lang="fr">
-${HEAD('Résultat')}
+<html lang="en">
+${HEAD('Result')}
 <body class="bg-[#0a0a0a] text-gray-100 font-sans min-h-screen flex items-center justify-center px-4" data-page="result" data-analysis-id="${analysisId}">
   <div class="text-center max-w-md">
-    <h1 class="text-2xl font-bold text-white mb-4">Résultat indisponible</h1>
-    <p class="text-gray-400 mb-6">L'analyse n'a pas pu être générée. Votre crédit est préservé.</p>
-    <a href="/" class="bg-violet-600 hover:bg-violet-500 text-white px-6 py-3 rounded-xl inline-block transition-colors">Retour</a>
+    <h1 class="text-2xl font-bold text-white mb-4">Result unavailable</h1>
+    <p class="text-gray-400 mb-6">The analysis could not be generated. Your credit is preserved.</p>
+    <a href="/" class="bg-violet-600 hover:bg-violet-500 text-white px-6 py-3 rounded-xl inline-block transition-colors">Back</a>
   </div>
   <script src="/static/app.js"></script>
 </body>
@@ -1089,11 +1089,11 @@ ${HEAD('Résultat')}
   }
 
   const scoreLabels: Record<string, string> = {
-    interest: 'Intérêt',
-    clarity: 'Clarté signal',
+    interest: 'Interest',
+    clarity: 'Signal clarity',
     respect: 'Respect',
     effort: 'Effort',
-    manipulation_risk: 'Risque manipulation',
+    manipulation_risk: 'Manipulation risk',
   }
 
   const offerLabel: Record<string, string> = {
@@ -1103,8 +1103,8 @@ ${HEAD('Résultat')}
   }
 
   return `<!DOCTYPE html>
-<html lang="fr">
-${HEAD('Votre analyse — Rapport complet')}
+<html lang="en">
+${HEAD('Your analysis — Full report')}
 <body class="bg-[#0a0a0a] text-gray-100 font-sans min-h-screen" data-page="result" data-analysis-id="${analysisId}">
 
   <!-- Result Header Banner (Hormozi: celebrate the win immediately) -->
@@ -1115,16 +1115,16 @@ ${HEAD('Votre analyse — Rapport complet')}
           <i class="fas fa-check text-white"></i>
         </div>
         <div>
-          <div class="text-white font-black text-sm">Analyse complète — ${offerLabel[analysis.offer_type] || analysis.offer_type}</div>
-          <div class="text-gray-400 text-xs">Rapport généré · Confiance : <span class="text-violet-400 font-bold">${confidence}%</span></div>
+          <div class="text-white font-black text-sm">Full analysis — ${offerLabel[analysis.offer_type] || analysis.offer_type}</div>
+          <div class="text-gray-400 text-xs">Report generated · Confidence: <span class="text-violet-400 font-bold">${confidence}%</span></div>
         </div>
       </div>
       <div class="flex items-center gap-2">
         <button id="copy-btn" class="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer">
-          <i class="fas fa-copy"></i> Copier le résumé
+          <i class="fas fa-copy"></i> Copy summary
         </button>
         <a href="/" class="flex items-center gap-2 bg-violet-600/20 hover:bg-violet-600/30 border border-violet-600/30 text-violet-300 px-3 py-2 rounded-lg text-xs font-semibold transition-colors">
-          <i class="fas fa-plus"></i> Nouvelle analyse
+          <i class="fas fa-plus"></i> New analysis
         </a>
       </div>
     </div>
@@ -1136,14 +1136,14 @@ ${HEAD('Votre analyse — Rapport complet')}
     <div class="glass-card rounded-2xl p-6 mb-6 border border-violet-500/20 bg-gradient-to-br from-violet-900/20 to-blue-900/10">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div class="flex-1">
-          <div class="text-violet-400 text-xs font-mono mb-2 uppercase tracking-wider">Verdict principal</div>
+          <div class="text-violet-400 text-xs font-mono mb-2 uppercase tracking-wider">Main verdict</div>
           <h1 id="result-summary" class="text-xl sm:text-2xl font-black text-white leading-snug">${escapeHtml(String(result.summary || ''))}</h1>
         </div>
         <div class="flex flex-col items-center bg-violet-900/30 border border-violet-700/30 rounded-xl p-4 flex-shrink-0">
           <div class="font-mono text-4xl font-black text-violet-400">${confidence}%</div>
-          <div class="text-gray-500 text-xs mt-1">confiance</div>
+          <div class="text-gray-500 text-xs mt-1">confidence</div>
           <div class="text-xs mt-2 text-center ${confidence >= 70 ? 'text-green-400' : confidence >= 50 ? 'text-amber-400' : 'text-red-400'} font-semibold">
-            ${confidence >= 70 ? '✓ Signal clair' : confidence >= 50 ? '~ Signal modéré' : '⚠ Signal faible'}
+            ${confidence >= 70 ? '✓ Clear signal' : confidence >= 50 ? '~ Moderate signal' : '⚠ Weak signal'}
           </div>
         </div>
       </div>
@@ -1151,13 +1151,13 @@ ${HEAD('Votre analyse — Rapport complet')}
 
     <!-- Scores — Visual impact -->
     <div class="glass-card rounded-2xl p-6 mb-6 border border-white/5">
-      <div class="text-gray-400 text-xs font-mono mb-4 uppercase tracking-wider">Scores de la situation</div>
+      <div class="text-gray-400 text-xs font-mono mb-4 uppercase tracking-wider">Situation scores</div>
       <div class="space-y-4">
         ${Object.entries(scores).map(([key, val]) => {
           const color = scoreColors[key] || 'violet'
           const label = scoreLabels[key] || key
           const value = typeof val === 'number' ? val : 0
-          const zone = value <= 29 ? { text: 'Critique', c: 'red' } : value <= 49 ? { text: 'Bas', c: 'orange' } : value <= 69 ? { text: 'Neutre', c: 'amber' } : value <= 84 ? { text: 'Positif', c: 'green' } : { text: 'Excellent', c: 'emerald' }
+          const zone = value <= 29 ? { text: 'Critical', c: 'red' } : value <= 49 ? { text: 'Low', c: 'orange' } : value <= 69 ? { text: 'Neutral', c: 'amber' } : value <= 84 ? { text: 'Positive', c: 'green' } : { text: 'Excellent', c: 'emerald' }
           return `
         <div data-score="${value}">
           <div class="flex justify-between items-center mb-1.5">
@@ -1180,8 +1180,8 @@ ${HEAD('Votre analyse — Rapport complet')}
     <div class="rounded-2xl p-[2px] bg-gradient-to-r from-violet-600/60 to-blue-600/40 mb-6">
       <div class="bg-[#0f0a1a] rounded-2xl p-6">
         <div class="flex items-center justify-between mb-3">
-          <div class="text-violet-400 text-xs font-mono uppercase tracking-wider">Lecture principale</div>
-          <div class="bg-violet-900/50 border border-violet-700/30 font-mono text-violet-300 text-sm font-bold px-3 py-1 rounded-full">${mainReading.probability_score > 1 ? Math.round(mainReading.probability_score) : Math.round(mainReading.probability_score * 100)}% probabilité</div>
+          <div class="text-violet-400 text-xs font-mono uppercase tracking-wider">Main reading</div>
+          <div class="bg-violet-900/50 border border-violet-700/30 font-mono text-violet-300 text-sm font-bold px-3 py-1 rounded-full">${mainReading.probability_score > 1 ? Math.round(mainReading.probability_score) : Math.round(mainReading.probability_score * 100)}% probability</div>
         </div>
         <h3 class="text-2xl font-black text-white mb-3">${escapeHtml(mainReading.title)}</h3>
         <p class="text-gray-300 leading-relaxed">${escapeHtml(mainReading.description)}</p>
@@ -1191,7 +1191,7 @@ ${HEAD('Votre analyse — Rapport complet')}
     <!-- Alternative Readings -->
     ${alternativeReadings.length > 0 ? `
     <div class="glass-card rounded-2xl p-6 mb-6 border border-white/5">
-      <div class="text-gray-400 text-xs font-mono mb-4 uppercase tracking-wider">Lectures alternatives</div>
+      <div class="text-gray-400 text-xs font-mono mb-4 uppercase tracking-wider">Alternative readings</div>
       <div class="space-y-3">
         ${alternativeReadings.map(r => `
         <div class="flex items-start gap-4 bg-gray-900/50 border border-gray-800 rounded-xl p-4">
@@ -1207,7 +1207,7 @@ ${HEAD('Votre analyse — Rapport complet')}
     <!-- Observable Signals -->
     ${observableSignals.length > 0 ? `
     <div class="glass-card rounded-2xl p-6 mb-6 border border-white/5">
-      <div class="text-gray-400 text-xs font-mono mb-4 uppercase tracking-wider">Signaux observables analysés</div>
+      <div class="text-gray-400 text-xs font-mono mb-4 uppercase tracking-wider">Observable signals analyzed</div>
       <div class="space-y-3">
         ${observableSignals.map((s, idx) => `
         <div class="flex gap-3 bg-blue-900/10 border border-blue-900/20 rounded-xl p-3">
@@ -1227,7 +1227,7 @@ ${HEAD('Votre analyse — Rapport complet')}
         <div class="w-8 h-8 bg-green-700/50 rounded-lg flex items-center justify-center">
           <i class="fas fa-arrow-right text-green-400 text-sm"></i>
         </div>
-        <div class="text-green-400 text-xs font-mono uppercase tracking-wider font-bold">Meilleure prochaine action</div>
+        <div class="text-green-400 text-xs font-mono uppercase tracking-wider font-bold">Best next action</div>
       </div>
       <h3 class="text-xl font-black text-white mb-2">${escapeHtml(bestNextAction.action)}</h3>
       <p class="text-gray-300 text-sm leading-relaxed">${escapeHtml(bestNextAction.rationale)}</p>
@@ -1237,8 +1237,8 @@ ${HEAD('Votre analyse — Rapport complet')}
     ${replyOptions.length > 0 ? `
     <div class="glass-card rounded-2xl p-6 mb-6 border border-white/5">
       <div class="flex items-center gap-2 mb-4">
-        <div class="text-gray-400 text-xs font-mono uppercase tracking-wider">Suggestions de réponse</div>
-        <div class="bg-violet-900/30 border border-violet-700/30 text-violet-300 text-xs px-2 py-0.5 rounded-full">Incluses</div>
+        <div class="text-gray-400 text-xs font-mono uppercase tracking-wider">Reply suggestions</div>
+        <div class="bg-violet-900/30 border border-violet-700/30 text-violet-300 text-xs px-2 py-0.5 rounded-full">Included</div>
       </div>
       <div class="space-y-4">
         ${replyOptions.map(r => `
@@ -1255,7 +1255,7 @@ ${HEAD('Votre analyse — Rapport complet')}
     <!-- Uncertainties -->
     ${uncertainties.length > 0 ? `
     <div class="glass-card rounded-2xl p-4 mb-6 border border-amber-500/10 bg-amber-900/5">
-      <div class="text-amber-400 text-xs font-mono mb-2 uppercase tracking-wider">⚠ Sources d'incertitude</div>
+      <div class="text-amber-400 text-xs font-mono mb-2 uppercase tracking-wider">⚠ Sources of uncertainty</div>
       <ul class="space-y-1.5">
         ${uncertainties.map(u => `<li class="text-gray-400 text-xs flex items-start gap-2"><i class="fas fa-exclamation-triangle text-amber-500 mt-0.5 text-xs flex-shrink-0"></i>${escapeHtml(u)}</li>`).join('')}
       </ul>
@@ -1269,29 +1269,29 @@ ${HEAD('Votre analyse — Rapport complet')}
         <div class="flex items-start justify-between gap-3 mb-4">
           <div>
             <div class="bg-amber-900/40 border border-amber-700/30 text-amber-300 text-xs px-3 py-1 rounded-full font-bold inline-block mb-2">
-              ⚡ Cette offre disparaît quand vous quittez la page
+              ⚡ This offer disappears when you leave the page
             </div>
             <h3 class="text-xl font-black text-white">
-              Vous savez ce que ça signifie.<br>
-              <span class="text-violet-400">Mais que répondez-vous ?</span>
+              You know what it means.<br>
+              <span class="text-violet-400">But what do you reply?</span>
             </h3>
           </div>
           <div class="text-right flex-shrink-0">
-            <div class="text-gray-600 text-xs line-through">Valeur réelle : 49€</div>
-            <div class="text-3xl font-black text-white">9€</div>
+            <div class="text-gray-600 text-xs line-through">Real value: €49</div>
+            <div class="text-3xl font-black text-white">€9</div>
           </div>
         </div>
 
         <!-- Value stack -->
         <p class="text-gray-300 text-sm mb-4 leading-relaxed">
-          Notre IA rédige <strong class="text-white">3 versions de réponse sur-mesure</strong> — adaptées à votre situation spécifique, pas des modèles génériques. Chaque version est livrée avec une explication de pourquoi elle fonctionne <em>dans votre contexte</em>.
+          Our AI writes <strong class="text-white">3 custom reply versions</strong> — tailored to your specific situation, not generic templates. Each version comes with an explanation of why it works <em>in your context</em>.
         </p>
 
         <div class="grid grid-cols-3 gap-3 mb-4">
           ${[
-            { icon: 'fa-dove', color: 'green', label: 'Diplomate', desc: 'Chaleureux, ouvre une porte sans pression' },
-            { icon: 'fa-bullseye', color: 'blue', label: 'Direct', desc: 'Clair, assertif, sans ambiguïté' },
-            { icon: 'fa-snowflake', color: 'slate', label: 'Détaché', desc: 'Faible investissement, signal de valeur' },
+            { icon: 'fa-dove', color: 'green', label: 'Diplomatic', desc: 'Warm, opens a door without pressure' },
+            { icon: 'fa-bullseye', color: 'blue', label: 'Direct', desc: 'Clear, assertive, no ambiguity' },
+            { icon: 'fa-snowflake', color: 'slate', label: 'Detached', desc: 'Low investment, high-value signal' },
           ].map(v => `
           <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-3 text-center">
             <i class="fas ${v.icon} text-${v.color}-400 mb-2 block text-base"></i>
@@ -1303,31 +1303,31 @@ ${HEAD('Votre analyse — Rapport complet')}
         <!-- Social proof for upsell -->
         <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-3 mb-4 flex items-center gap-3">
           <div class="text-amber-400 text-xl flex-shrink-0">★★★★★</div>
-          <p class="text-gray-400 text-xs italic">"Les 3 messages proposés étaient exactement ce dont j'avais besoin. J'ai choisi le Détaché. Il m'a rappelé dans la journée." — Marie L.</p>
+          <p class="text-gray-400 text-xs italic">"The 3 suggested messages were exactly what I needed. I picked the Detached one. He called me back that same day." — Marie L.</p>
         </div>
 
         <button id="upsell-btn"
           class="w-full bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white py-4 rounded-xl font-black text-base transition-all cursor-pointer shadow-xl">
-          Obtenir mes 3 réponses rédigées — 9€ →
+          Get my 3 written replies — €9 →
         </button>
-        <p class="text-center text-gray-600 text-xs mt-2">Résultat immédiat · Garanti ou remboursé · Offre unique</p>
+        <p class="text-center text-gray-600 text-xs mt-2">Instant result · Money-back guarantee · One-time offer</p>
       </div>
     </div>` : upsellStatus === 'paid' ? `
     <div class="bg-green-950/30 border border-green-700/30 rounded-2xl p-5 mb-6 flex items-center gap-3">
       <i class="fas fa-check-circle text-green-400 text-xl"></i>
       <div>
-        <div class="text-green-300 font-bold text-sm">Reply Generator activé</div>
-        <div class="text-gray-400 text-xs">Vos réponses rédigées sont incluses ci-dessus.</div>
+        <div class="text-green-300 font-bold text-sm">Reply Generator activated</div>
+        <div class="text-gray-400 text-xs">Your written replies are included above.</div>
       </div>
     </div>` : ''}
 
     <!-- Disclaimer + CTA to new analysis -->
     <div class="text-center text-xs text-gray-600 mt-6 pb-10 space-y-2">
-      <p>Cette analyse est probabiliste. Elle ne remplace pas l'avis d'un professionnel de santé mentale.</p>
-      <p>Probabilité ≠ Certitude — <em>"Observable signals first."</em></p>
+      <p>This analysis is probabilistic. It does not replace the advice of a mental health professional.</p>
+      <p>Probability ≠ Certainty — <em>"Observable signals first."</em></p>
       <div class="mt-4">
         <a href="/" class="text-violet-500 hover:text-violet-400 transition-colors font-semibold">
-          <i class="fas fa-plus-circle mr-1"></i>Analyser une autre situation →
+          <i class="fas fa-plus-circle mr-1"></i>Analyze another situation →
         </a>
       </div>
     </div>
@@ -1340,21 +1340,21 @@ ${HEAD('Votre analyse — Rapport complet')}
 
 function upsellPage(analysisId: string): string {
   return `<!DOCTYPE html>
-<html lang="fr">
-${HEAD('Une étape de plus — Obtenez la réponse parfaite')}
+<html lang="en">
+${HEAD('One more step — Get the perfect reply')}
 <body class="bg-[#0a0a0a] text-gray-100 font-sans min-h-screen flex items-center justify-center px-4" data-page="upsell" data-analysis-id="${analysisId}">
   <div class="max-w-lg w-full">
 
     <!-- Value-first header -->
     <div class="text-center mb-8">
       <div class="inline-block bg-violet-900/40 border border-violet-700/30 text-violet-300 text-xs px-3 py-1.5 rounded-full mb-4 font-semibold">
-        Vous savez maintenant ce que ça signifie
+        You now know what it means
       </div>
       <h1 class="text-2xl sm:text-3xl font-black text-white mb-3">
-        La question qui reste :<br>
-        <span class="gradient-text">Qu'est-ce que vous répondez ?</span>
+        The question that remains:<br>
+        <span class="gradient-text">What do you reply?</span>
       </h1>
-      <p class="text-gray-400 text-sm">Notre IA rédige 3 messages calibrés sur votre situation — avec l'explication de pourquoi chaque version fonctionne.</p>
+      <p class="text-gray-400 text-sm">Our AI writes 3 messages calibrated to your situation — with an explanation of why each version works.</p>
     </div>
 
     <!-- Offer card -->
@@ -1363,20 +1363,20 @@ ${HEAD('Une étape de plus — Obtenez la réponse parfaite')}
         <!-- Anchoring -->
         <div class="flex items-center justify-between mb-5">
           <div>
-            <div class="text-gray-500 text-sm line-through">Valeur d'un coach : 49€+</div>
-            <div class="text-4xl font-black text-white">9€ <span class="text-gray-500 text-lg font-normal">une fois</span></div>
+            <div class="text-gray-500 text-sm line-through">Value of a coach: €49+</div>
+            <div class="text-4xl font-black text-white">€9 <span class="text-gray-500 text-lg font-normal">one time</span></div>
           </div>
           <div class="bg-amber-900/30 border border-amber-700/30 text-amber-300 text-xs px-3 py-1.5 rounded-full font-bold">
-            Offre unique
+            One-time offer
           </div>
         </div>
 
         <!-- What you get -->
         <div class="space-y-3 mb-6">
           ${[
-            { icon: 'fa-dove', color: 'green', style: 'Diplomate', what: 'Chaleureux, ouvert, sans confrontation. Idéal pour garder la porte ouverte.'},
-            { icon: 'fa-bullseye', color: 'blue', style: 'Direct', what: 'Clair, honnête, sans détour. Pour ceux qui veulent des réponses nettes.'},
-            { icon: 'fa-snowflake', color: 'gray', style: 'Détaché', what: 'Faible investissement visible. Signal de valeur. Pour ne plus être en position basse.'},
+            { icon: 'fa-dove', color: 'green', style: 'Diplomatic', what: 'Warm, open, no confrontation. Ideal for keeping the door open.'},
+            { icon: 'fa-bullseye', color: 'blue', style: 'Direct', what: 'Clear, honest, no beating around the bush. For those who want straight answers.'},
+            { icon: 'fa-snowflake', color: 'gray', style: 'Detached', what: 'Low visible investment. High-value signal. To stop being in the weaker position.'},
           ].map(v => `
           <div class="flex items-start gap-3 bg-gray-900/50 border border-gray-800 rounded-xl p-3">
             <div class="w-8 h-8 bg-${v.color}-900/50 border border-${v.color}-800/30 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -1392,15 +1392,15 @@ ${HEAD('Une étape de plus — Obtenez la réponse parfaite')}
         <button id="upsell-checkout-btn"
           onclick="handleUpsellCheckout('${analysisId}')"
           class="w-full bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white py-4 rounded-xl font-black text-base transition-all cursor-pointer shadow-xl">
-          Rédiger mes 3 réponses — 9€ →
+          Write my 3 replies — €9 →
         </button>
-        <p class="text-center text-gray-600 text-xs mt-2">Résultat instantané · Satisfait ou remboursé</p>
+        <p class="text-center text-gray-600 text-xs mt-2">Instant result · Money-back guarantee</p>
       </div>
     </div>
 
     <div class="text-center">
       <a href="/result/${analysisId}" class="text-gray-600 hover:text-gray-400 text-xs transition-colors">
-        Non merci, je me débrouille sans
+        No thanks, I'll figure it out myself
       </a>
     </div>
   </div>
@@ -1409,7 +1409,7 @@ ${HEAD('Une étape de plus — Obtenez la réponse parfaite')}
     async function handleUpsellCheckout(analysisId) {
       const btn = document.getElementById('upsell-checkout-btn')
       btn.disabled = true
-      btn.textContent = 'Redirection vers le paiement...'
+      btn.textContent = 'Redirecting to payment...'
       try {
         const res = await fetch('/api/create-upsell-session', {
           method: 'POST',
@@ -1420,7 +1420,7 @@ ${HEAD('Une étape de plus — Obtenez la réponse parfaite')}
         if (data.checkoutUrl) window.location.href = data.checkoutUrl
       } catch(e) {
         btn.disabled = false
-        btn.textContent = 'Rédiger mes 3 réponses — 9€ →'
+        btn.textContent = 'Write my 3 replies — €9 →'
       }
     }
   </script>
@@ -1430,7 +1430,7 @@ ${HEAD('Une étape de plus — Obtenez la réponse parfaite')}
 
 function errorPage(title: string, message: string): string {
   return `<!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 ${HEAD(title)}
 <body class="bg-[#0a0a0a] text-gray-100 font-sans min-h-screen flex items-center justify-center px-4">
   <div class="text-center max-w-md">
@@ -1439,7 +1439,7 @@ ${HEAD(title)}
     </div>
     <h1 class="text-2xl font-bold text-white mb-3">${escapeHtml(title)}</h1>
     <p class="text-gray-400 mb-6">${escapeHtml(message)}</p>
-    <a href="/" class="bg-violet-600 hover:bg-violet-500 text-white px-6 py-3 rounded-xl inline-block transition-colors">Retour à l'accueil</a>
+    <a href="/" class="bg-violet-600 hover:bg-violet-500 text-white px-6 py-3 rounded-xl inline-block transition-colors">Back to home</a>
   </div>
 </body>
 </html>`
@@ -1447,10 +1447,10 @@ ${HEAD(title)}
 
 function legalPage(title: string, content: string): string {
   return `<!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 ${HEAD(title)}
 <body class="bg-[#0a0a0a] text-gray-100 font-sans max-w-3xl mx-auto px-6 py-16">
-  <a href="/" class="text-gray-400 hover:text-white text-sm mb-6 inline-block">← Retour</a>
+  <a href="/" class="text-gray-400 hover:text-white text-sm mb-6 inline-block">← Back</a>
   <h1 class="text-3xl font-bold text-white mb-8">${escapeHtml(title)}</h1>
   <div class="prose prose-invert max-w-none text-gray-300 space-y-4 text-sm leading-relaxed">
     ${content}
@@ -1461,216 +1461,216 @@ ${HEAD(title)}
 
 function privacyContent(): string {
   return `
-  <p><strong>Dernière mise à jour :</strong> 16 avril 2026</p>
+  <p><strong>Last updated:</strong> April 16, 2026</p>
 
-  <h2 class="text-xl font-bold text-white mt-6">1. Responsable du traitement</h2>
-  <p>Le responsable du traitement des données est :</p>
+  <h2 class="text-xl font-bold text-white mt-6">1. Data controller</h2>
+  <p>The data controller is:</p>
   <ul class="list-disc pl-5 space-y-1">
-    <li><strong>Raison sociale :</strong> Strategixs — Société par actions simplifiée (SAS)</li>
-    <li><strong>Adresse :</strong> 50 Avenue des Champs Élysées, 75008 Paris, France</li>
-    <li><strong>SIREN :</strong> 929 145 621</li>
-    <li><strong>SIRET :</strong> 929 145 621 00017</li>
-    <li><strong>N° TVA :</strong> FR61929145621</li>
-    <li><strong>Email :</strong> social@strategixs.net</li>
+    <li><strong>Company name:</strong> Strategixs — Société par actions simplifiée (SAS)</li>
+    <li><strong>Address:</strong> 50 Avenue des Champs Élysées, 75008 Paris, France</li>
+    <li><strong>SIREN:</strong> 929 145 621</li>
+    <li><strong>SIRET:</strong> 929 145 621 00017</li>
+    <li><strong>VAT No.:</strong> FR61929145621</li>
+    <li><strong>Email:</strong> social@strategixs.net</li>
   </ul>
-  <p class="mt-2">Pour toute question relative à vos données personnelles, contactez-nous à l'adresse ci-dessus.</p>
+  <p class="mt-2">For any questions regarding your personal data, contact us at the address above.</p>
 
-  <h2 class="text-xl font-bold text-white mt-6">2. Données collectées</h2>
-  <p>Nous collectons les données suivantes :</p>
+  <h2 class="text-xl font-bold text-white mt-6">2. Data collected</h2>
+  <p>We collect the following data:</p>
   <ul class="list-disc pl-5 space-y-1">
-    <li><strong>Email :</strong> collecté via Stripe lors du paiement, ou via le formulaire de capture (newsletter).</li>
-    <li><strong>Textes soumis :</strong> le message ou la situation que vous soumettez pour analyse.</li>
-    <li><strong>Contexte d'analyse :</strong> type de relation, mode d'analyse, contexte supplémentaire fourni volontairement.</li>
-    <li><strong>Données de paiement :</strong> traitées exclusivement par Stripe (nous ne stockons ni numéro de carte ni données bancaires).</li>
-    <li><strong>Données techniques :</strong> adresse IP, user-agent, horodatage des requêtes (collectées automatiquement pour la sécurité du service).</li>
+    <li><strong>Email:</strong> collected via Stripe during payment, or via the capture form (newsletter).</li>
+    <li><strong>Submitted texts:</strong> the message or situation you submit for analysis.</li>
+    <li><strong>Analysis context:</strong> relationship type, analysis mode, additional context provided voluntarily.</li>
+    <li><strong>Payment data:</strong> processed exclusively by Stripe (we do not store card numbers or banking details).</li>
+    <li><strong>Technical data:</strong> IP address, user-agent, request timestamps (collected automatically for service security).</li>
   </ul>
-  <p class="mt-2">Aucun compte utilisateur n'est créé. Nous ne collectons pas de nom, prénom, adresse postale ni numéro de téléphone.</p>
+  <p class="mt-2">No user account is created. We do not collect names, postal addresses, or phone numbers.</p>
 
-  <h2 class="text-xl font-bold text-white mt-6">3. Base légale du traitement</h2>
-  <p>Le traitement de vos données repose sur les bases légales suivantes (RGPD Art. 6) :</p>
+  <h2 class="text-xl font-bold text-white mt-6">3. Legal basis for processing</h2>
+  <p>Your data is processed under the following legal bases (GDPR Art. 6):</p>
   <ul class="list-disc pl-5 space-y-1">
-    <li><strong>Exécution du contrat :</strong> traitement de votre commande, génération de l'analyse, gestion du paiement.</li>
-    <li><strong>Consentement :</strong> inscription à la newsletter, capture d'email volontaire.</li>
-    <li><strong>Intérêt légitime :</strong> sécurité du service, prévention des fraudes, logs techniques.</li>
+    <li><strong>Contract performance:</strong> processing your order, generating the analysis, managing payment.</li>
+    <li><strong>Consent:</strong> newsletter signup, voluntary email capture.</li>
+    <li><strong>Legitimate interest:</strong> service security, fraud prevention, technical logs.</li>
   </ul>
 
-  <h2 class="text-xl font-bold text-white mt-6">4. Finalité du traitement</h2>
-  <p>Vos données sont utilisées exclusivement pour :</p>
+  <h2 class="text-xl font-bold text-white mt-6">4. Purpose of processing</h2>
+  <p>Your data is used exclusively for:</p>
   <ul class="list-disc pl-5 space-y-1">
-    <li>Générer votre analyse personnalisée via notre moteur IA.</li>
-    <li>Traiter et confirmer votre paiement.</li>
-    <li>Vous recontacter en cas de problème technique lié à votre commande.</li>
-    <li>Améliorer la qualité du service (données anonymisées et agrégées uniquement).</li>
+    <li>Generating your personalized analysis via our AI engine.</li>
+    <li>Processing and confirming your payment.</li>
+    <li>Contacting you in case of a technical issue related to your order.</li>
+    <li>Improving service quality (anonymized and aggregated data only).</li>
   </ul>
-  <p class="mt-2">Vos textes ne sont <strong>jamais</strong> utilisés pour entraîner des modèles d'IA.</p>
+  <p class="mt-2">Your texts are <strong>never</strong> used to train AI models.</p>
 
-  <h2 class="text-xl font-bold text-white mt-6">5. Sous-traitants et partage des données</h2>
-  <p>Vos données sont partagées avec les prestataires suivants, strictement nécessaires au fonctionnement du service :</p>
+  <h2 class="text-xl font-bold text-white mt-6">5. Sub-processors and data sharing</h2>
+  <p>Your data is shared with the following providers, strictly necessary for the operation of the service:</p>
   <table class="w-full text-sm mt-2 border border-gray-700">
-    <thead><tr class="bg-gray-800"><th class="px-3 py-2 text-left">Prestataire</th><th class="px-3 py-2 text-left">Rôle</th><th class="px-3 py-2 text-left">Localisation</th></tr></thead>
+    <thead><tr class="bg-gray-800"><th class="px-3 py-2 text-left">Provider</th><th class="px-3 py-2 text-left">Role</th><th class="px-3 py-2 text-left">Location</th></tr></thead>
     <tbody>
-      <tr class="border-t border-gray-700"><td class="px-3 py-2">Stripe, Inc.</td><td class="px-3 py-2">Traitement des paiements</td><td class="px-3 py-2">USA (certifié DPF)</td></tr>
-      <tr class="border-t border-gray-700"><td class="px-3 py-2">OpenAI, Inc.</td><td class="px-3 py-2">Génération d'analyse IA</td><td class="px-3 py-2">USA (certifié DPF)</td></tr>
-      <tr class="border-t border-gray-700"><td class="px-3 py-2">Cloudflare, Inc.</td><td class="px-3 py-2">Hébergement, CDN, base de données</td><td class="px-3 py-2">Global (certifié DPF)</td></tr>
+      <tr class="border-t border-gray-700"><td class="px-3 py-2">Stripe, Inc.</td><td class="px-3 py-2">Payment processing</td><td class="px-3 py-2">USA (DPF certified)</td></tr>
+      <tr class="border-t border-gray-700"><td class="px-3 py-2">OpenAI, Inc.</td><td class="px-3 py-2">AI analysis generation</td><td class="px-3 py-2">USA (DPF certified)</td></tr>
+      <tr class="border-t border-gray-700"><td class="px-3 py-2">Cloudflare, Inc.</td><td class="px-3 py-2">Hosting, CDN, database</td><td class="px-3 py-2">Global (DPF certified)</td></tr>
     </tbody>
   </table>
-  <p class="mt-2">Vos données ne sont <strong>jamais vendues</strong> à des tiers. Aucune donnée n'est partagée à des fins publicitaires.</p>
+  <p class="mt-2">Your data is <strong>never sold</strong> to third parties. No data is shared for advertising purposes.</p>
 
-  <h2 class="text-xl font-bold text-white mt-6">6. Transferts hors Union européenne</h2>
-  <p>Certains de nos prestataires sont basés aux États-Unis. Ces transferts sont encadrés par :</p>
+  <h2 class="text-xl font-bold text-white mt-6">6. Transfers outside the European Union</h2>
+  <p>Some of our providers are based in the United States. These transfers are governed by:</p>
   <ul class="list-disc pl-5 space-y-1">
-    <li>Le <strong>EU-U.S. Data Privacy Framework (DPF)</strong> pour Stripe, OpenAI et Cloudflare.</li>
-    <li>Des <strong>clauses contractuelles types (SCCs)</strong> de la Commission européenne lorsque le DPF ne s'applique pas.</li>
+    <li>The <strong>EU-U.S. Data Privacy Framework (DPF)</strong> for Stripe, OpenAI, and Cloudflare.</li>
+    <li><strong>Standard Contractual Clauses (SCCs)</strong> from the European Commission where the DPF does not apply.</li>
   </ul>
-  <p class="mt-2">Conformément à l'article 46 du RGPD, des garanties appropriées sont en place pour protéger vos données.</p>
+  <p class="mt-2">In accordance with Article 46 of the GDPR, appropriate safeguards are in place to protect your data.</p>
 
-  <h2 class="text-xl font-bold text-white mt-6">7. Durée de conservation</h2>
+  <h2 class="text-xl font-bold text-white mt-6">7. Data retention</h2>
   <ul class="list-disc pl-5 space-y-1">
-    <li><strong>Textes soumis et analyses :</strong> 90 jours, puis suppression automatique.</li>
-    <li><strong>Email :</strong> conservé tant que nécessaire à la relation commerciale, maximum 3 ans après le dernier achat.</li>
-    <li><strong>Données de paiement :</strong> conservées par Stripe selon leur propre politique (obligations légales comptables).</li>
-    <li><strong>Logs techniques :</strong> 30 jours maximum.</li>
-    <li><strong>Newsletter :</strong> jusqu'à désinscription.</li>
-  </ul>
-
-  <h2 class="text-xl font-bold text-white mt-6">8. Cookies et technologies de suivi</h2>
-  <p>Ce site utilise des cookies strictement nécessaires au fonctionnement du service :</p>
-  <ul class="list-disc pl-5 space-y-1">
-    <li><strong>Session technique :</strong> maintien de votre session de navigation (aucun cookie de tracking).</li>
-    <li><strong>Cloudflare :</strong> cookies de sécurité et de performance (cf-bm, __cflb).</li>
-  </ul>
-  <p class="mt-2">Nous n'utilisons <strong>aucun cookie publicitaire, analytique ou de profilage</strong>. Aucun outil de tracking tiers (Google Analytics, Facebook Pixel, etc.) n'est installé.</p>
-
-  <h2 class="text-xl font-bold text-white mt-6">9. Vos droits (RGPD)</h2>
-  <p>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez des droits suivants :</p>
-  <ul class="list-disc pl-5 space-y-1">
-    <li><strong>Droit d'accès :</strong> obtenir une copie de vos données personnelles.</li>
-    <li><strong>Droit de rectification :</strong> corriger des données inexactes.</li>
-    <li><strong>Droit à l'effacement :</strong> demander la suppression de vos données.</li>
-    <li><strong>Droit à la portabilité :</strong> recevoir vos données dans un format structuré.</li>
-    <li><strong>Droit d'opposition :</strong> vous opposer au traitement de vos données.</li>
-    <li><strong>Droit à la limitation :</strong> restreindre le traitement dans certains cas.</li>
-    <li><strong>Droit de retrait du consentement :</strong> à tout moment, sans affecter la licéité du traitement antérieur.</li>
-  </ul>
-  <p class="mt-3">Pour exercer vos droits, envoyez un email à <strong>social@strategixs.net</strong> avec l'objet "Demande RGPD". Nous répondrons sous 30 jours maximum.</p>
-
-  <h2 class="text-xl font-bold text-white mt-6">10. Réclamation</h2>
-  <p>Si vous estimez que le traitement de vos données ne respecte pas la réglementation, vous pouvez introduire une réclamation auprès de la <strong>CNIL</strong> (Commission Nationale de l'Informatique et des Libertés) :</p>
-  <ul class="list-disc pl-5 space-y-1">
-    <li>Site : <a href="https://www.cnil.fr" class="text-violet-400 hover:underline" target="_blank" rel="noopener">www.cnil.fr</a></li>
-    <li>Adresse : 3 Place de Fontenoy, TSA 80715, 75334 Paris Cedex 07</li>
+    <li><strong>Submitted texts and analyses:</strong> 90 days, then automatic deletion.</li>
+    <li><strong>Email:</strong> retained as long as necessary for the business relationship, maximum 3 years after the last purchase.</li>
+    <li><strong>Payment data:</strong> retained by Stripe according to their own policy (legal accounting obligations).</li>
+    <li><strong>Technical logs:</strong> 30 days maximum.</li>
+    <li><strong>Newsletter:</strong> until unsubscription.</li>
   </ul>
 
-  <h2 class="text-xl font-bold text-white mt-6">11. Sécurité des données</h2>
-  <p>Nous mettons en œuvre les mesures techniques et organisationnelles suivantes :</p>
+  <h2 class="text-xl font-bold text-white mt-6">8. Cookies and tracking technologies</h2>
+  <p>This site uses cookies strictly necessary for the operation of the service:</p>
   <ul class="list-disc pl-5 space-y-1">
-    <li>Chiffrement HTTPS/TLS sur toutes les communications.</li>
-    <li>Base de données chiffrée au repos (Cloudflare D1).</li>
-    <li>Accès restreint aux données (principe du moindre privilège).</li>
-    <li>Protection contre les attaques par force brute (rate limiting).</li>
-    <li>Vérification cryptographique des webhooks de paiement.</li>
-    <li>Aucune donnée bancaire stockée sur nos serveurs.</li>
+    <li><strong>Technical session:</strong> maintaining your browsing session (no tracking cookies).</li>
+    <li><strong>Cloudflare:</strong> security and performance cookies (cf-bm, __cflb).</li>
+  </ul>
+  <p class="mt-2">We use <strong>no advertising, analytics, or profiling cookies</strong>. No third-party tracking tools (Google Analytics, Facebook Pixel, etc.) are installed.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">9. Your rights (GDPR)</h2>
+  <p>Under the General Data Protection Regulation (GDPR), you have the following rights:</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li><strong>Right of access:</strong> obtain a copy of your personal data.</li>
+    <li><strong>Right to rectification:</strong> correct inaccurate data.</li>
+    <li><strong>Right to erasure:</strong> request deletion of your data.</li>
+    <li><strong>Right to data portability:</strong> receive your data in a structured format.</li>
+    <li><strong>Right to object:</strong> object to the processing of your data.</li>
+    <li><strong>Right to restriction:</strong> restrict processing in certain cases.</li>
+    <li><strong>Right to withdraw consent:</strong> at any time, without affecting the lawfulness of prior processing.</li>
+  </ul>
+  <p class="mt-3">To exercise your rights, send an email to <strong>social@strategixs.net</strong> with the subject "GDPR Request". We will respond within 30 days maximum.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">10. Complaints</h2>
+  <p>If you believe that the processing of your data does not comply with regulations, you may file a complaint with the <strong>CNIL</strong> (Commission Nationale de l'Informatique et des Libertés), the French data protection authority:</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li>Website: <a href="https://www.cnil.fr" class="text-violet-400 hover:underline" target="_blank" rel="noopener">www.cnil.fr</a></li>
+    <li>Address: 3 Place de Fontenoy, TSA 80715, 75334 Paris Cedex 07</li>
   </ul>
 
-  <h2 class="text-xl font-bold text-white mt-6">12. Mineurs</h2>
-  <p>Ce service est destiné aux personnes de <strong>16 ans et plus</strong>. Nous ne collectons pas sciemment de données de mineurs de moins de 16 ans. Si vous êtes parent et pensez que votre enfant a utilisé ce service, contactez-nous pour suppression.</p>
+  <h2 class="text-xl font-bold text-white mt-6">11. Data security</h2>
+  <p>We implement the following technical and organizational measures:</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li>HTTPS/TLS encryption on all communications.</li>
+    <li>Database encrypted at rest (Cloudflare D1).</li>
+    <li>Restricted data access (principle of least privilege).</li>
+    <li>Brute-force attack protection (rate limiting).</li>
+    <li>Cryptographic verification of payment webhooks.</li>
+    <li>No banking data stored on our servers.</li>
+  </ul>
 
-  <h2 class="text-xl font-bold text-white mt-6">13. Modifications</h2>
-  <p>Cette politique peut être mise à jour. En cas de modification substantielle, un avis sera affiché sur le site. La date de dernière mise à jour en haut de cette page fait foi.</p>
+  <h2 class="text-xl font-bold text-white mt-6">12. Minors</h2>
+  <p>This service is intended for individuals <strong>aged 16 and over</strong>. We do not knowingly collect data from minors under 16. If you are a parent and believe your child has used this service, contact us for deletion.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">13. Changes</h2>
+  <p>This policy may be updated. In case of a substantial change, a notice will be displayed on the site. The last updated date at the top of this page prevails.</p>
   `
 }
 
 function termsContent(): string {
   return `
-  <p><strong>Dernière mise à jour :</strong> 16 avril 2026</p>
+  <p><strong>Last updated:</strong> April 16, 2026</p>
 
-  <h2 class="text-xl font-bold text-white mt-6">1. Mentions légales</h2>
-  <p>Le service Signal Decoder est édité par :</p>
+  <h2 class="text-xl font-bold text-white mt-6">1. Legal notice</h2>
+  <p>The Signal Decoder service is published by:</p>
   <ul class="list-disc pl-5 space-y-1">
-    <li><strong>Éditeur :</strong> Strategixs — Société par actions simplifiée (SAS)</li>
-    <li><strong>Adresse :</strong> 50 Avenue des Champs Élysées, 75008 Paris, France</li>
-    <li><strong>SIREN :</strong> 929 145 621 · <strong>SIRET :</strong> 929 145 621 00017</li>
-    <li><strong>N° TVA intracommunautaire :</strong> FR61929145621</li>
-    <li><strong>Email :</strong> social@strategixs.net</li>
-    <li><strong>Hébergeur :</strong> Cloudflare, Inc. — 101 Townsend Street, San Francisco, CA 94107, USA — <a href="https://www.cloudflare.com" class="text-violet-400 hover:underline" target="_blank" rel="noopener">www.cloudflare.com</a></li>
+    <li><strong>Publisher:</strong> Strategixs — Société par actions simplifiée (SAS)</li>
+    <li><strong>Address:</strong> 50 Avenue des Champs Élysées, 75008 Paris, France</li>
+    <li><strong>SIREN:</strong> 929 145 621 · <strong>SIRET:</strong> 929 145 621 00017</li>
+    <li><strong>Intra-Community VAT No.:</strong> FR61929145621</li>
+    <li><strong>Email:</strong> social@strategixs.net</li>
+    <li><strong>Host:</strong> Cloudflare, Inc. — 101 Townsend Street, San Francisco, CA 94107, USA — <a href="https://www.cloudflare.com" class="text-violet-400 hover:underline" target="_blank" rel="noopener">www.cloudflare.com</a></li>
   </ul>
 
-  <h2 class="text-xl font-bold text-white mt-6">2. Objet du service</h2>
-  <p>Signal Decoder est un outil d'analyse assistée par intelligence artificielle. Il propose une <strong>interprétation probabiliste</strong> de messages et de situations sociales soumis par l'utilisateur.</p>
-  <p class="mt-2"><strong>Le service ne constitue en aucun cas :</strong></p>
+  <h2 class="text-xl font-bold text-white mt-6">2. Purpose of the service</h2>
+  <p>Signal Decoder is an AI-assisted analysis tool. It provides a <strong>probabilistic interpretation</strong> of messages and social situations submitted by the user.</p>
+  <p class="mt-2"><strong>The service does not constitute in any way:</strong></p>
   <ul class="list-disc pl-5 space-y-1">
-    <li>Un avis médical, psychologique ou psychiatrique.</li>
-    <li>Un conseil juridique.</li>
-    <li>Un diagnostic clinique ou une évaluation de santé mentale.</li>
-    <li>Un substitut à une consultation avec un professionnel qualifié.</li>
+    <li>Medical, psychological, or psychiatric advice.</li>
+    <li>Legal advice.</li>
+    <li>A clinical diagnosis or mental health assessment.</li>
+    <li>A substitute for consultation with a qualified professional.</li>
   </ul>
-  <p class="mt-2">Les résultats sont fournis à titre informatif et de divertissement. L'utilisateur reste seul responsable des décisions prises sur la base de ces analyses.</p>
+  <p class="mt-2">Results are provided for informational and entertainment purposes. The user remains solely responsible for decisions made based on these analyses.</p>
 
-  <h2 class="text-xl font-bold text-white mt-6">3. Acceptation des conditions</h2>
-  <p>L'utilisation du service implique l'acceptation pleine et entière des présentes Conditions Générales d'Utilisation (CGU). Si vous n'acceptez pas ces conditions, vous ne devez pas utiliser le service.</p>
+  <h2 class="text-xl font-bold text-white mt-6">3. Acceptance of terms</h2>
+  <p>Use of the service implies full and complete acceptance of these Terms of Use. If you do not accept these terms, you must not use the service.</p>
 
-  <h2 class="text-xl font-bold text-white mt-6">4. Accès au service</h2>
-  <p>Le service est accessible en ligne, sans création de compte. L'accès aux analyses est conditionné au paiement préalable via Stripe.</p>
-  <p class="mt-2">Nous nous réservons le droit de suspendre ou interrompre le service temporairement pour maintenance, mise à jour ou cas de force majeure, sans indemnisation.</p>
+  <h2 class="text-xl font-bold text-white mt-6">4. Access to the service</h2>
+  <p>The service is accessible online, without creating an account. Access to analyses is conditional on prior payment via Stripe.</p>
+  <p class="mt-2">We reserve the right to temporarily suspend or interrupt the service for maintenance, updates, or force majeure, without compensation.</p>
 
-  <h2 class="text-xl font-bold text-white mt-6">5. Tarifs et paiement</h2>
-  <p>Les tarifs sont affichés en euros (€), toutes taxes comprises. Les offres disponibles sont :</p>
+  <h2 class="text-xl font-bold text-white mt-6">5. Pricing and payment</h2>
+  <p>Prices are displayed in euros (EUR), all taxes included. Available offers are:</p>
   <ul class="list-disc pl-5 space-y-1">
-    <li><strong>Quick Decode :</strong> 19€ — analyse concise d'un message.</li>
-    <li><strong>Deep Read :</strong> 29€ — analyse approfondie avec contexte.</li>
-    <li><strong>Pattern Analysis :</strong> 59€ — analyse de patterns relationnels.</li>
-    <li><strong>Reply Generator (upsell) :</strong> 9€ — 3 suggestions de réponse personnalisées.</li>
+    <li><strong>Quick Decode:</strong> €19 — concise analysis of a single message.</li>
+    <li><strong>Deep Read:</strong> €29 — in-depth analysis with context.</li>
+    <li><strong>Pattern Analysis:</strong> €59 — relational pattern analysis.</li>
+    <li><strong>Reply Generator (upsell):</strong> €9 — 3 personalized reply suggestions.</li>
   </ul>
-  <p class="mt-2">Les paiements sont traités de manière sécurisée par <strong>Stripe, Inc.</strong> Nous ne stockons aucune donnée bancaire.</p>
-  <p class="mt-2">Nous nous réservons le droit de modifier les tarifs à tout moment. Les modifications n'affectent pas les commandes déjà validées.</p>
+  <p class="mt-2">Payments are processed securely by <strong>Stripe, Inc.</strong> We do not store any banking data.</p>
+  <p class="mt-2">We reserve the right to modify prices at any time. Changes do not affect orders already confirmed.</p>
 
-  <h2 class="text-xl font-bold text-white mt-6">6. Droit de rétractation</h2>
-  <p>Conformément à l'article L221-28 du Code de la consommation, le droit de rétractation <strong>ne s'applique pas</strong> aux contrats de fourniture de contenu numérique non fourni sur un support matériel dont l'exécution a commencé avec l'accord préalable du consommateur.</p>
-  <p class="mt-2">En validant votre commande et en soumettant un texte pour analyse, vous acceptez expressément que l'exécution du service commence immédiatement et renoncez à votre droit de rétractation.</p>
-  <p class="mt-2"><strong>Garantie de satisfaction :</strong> malgré l'inapplicabilité du droit de rétractation, nous proposons un remboursement en cas de dysfonctionnement technique avéré empêchant la délivrance de l'analyse (erreur serveur, échec de génération). Contactez social@strategixs.net dans les 7 jours suivant l'achat.</p>
+  <h2 class="text-xl font-bold text-white mt-6">6. Right of withdrawal</h2>
+  <p>In accordance with Article L221-28 of the French Consumer Code, the right of withdrawal <strong>does not apply</strong> to contracts for the supply of digital content not provided on a tangible medium where performance has begun with the consumer's prior consent.</p>
+  <p class="mt-2">By confirming your order and submitting text for analysis, you expressly agree that the service begins immediately and you waive your right of withdrawal.</p>
+  <p class="mt-2"><strong>Satisfaction guarantee:</strong> despite the inapplicability of the right of withdrawal, we offer a refund in the event of a verified technical malfunction preventing delivery of the analysis (server error, generation failure). Contact social@strategixs.net within 7 days of purchase.</p>
 
-  <h2 class="text-xl font-bold text-white mt-6">7. Propriété intellectuelle</h2>
+  <h2 class="text-xl font-bold text-white mt-6">7. Intellectual property</h2>
   <ul class="list-disc pl-5 space-y-1">
-    <li><strong>Le service :</strong> l'ensemble du site, de son design, de son code source et de ses algorithmes est la propriété exclusive de Strategixs. Toute reproduction est interdite.</li>
-    <li><strong>Vos textes :</strong> les textes que vous soumettez restent votre propriété. Vous nous accordez une licence temporaire et limitée pour les traiter via notre moteur IA.</li>
-    <li><strong>Les analyses :</strong> les analyses générées vous sont concédées à titre de licence personnelle, non cessible. Vous pouvez les utiliser librement à titre privé.</li>
-  </ul>
-
-  <h2 class="text-xl font-bold text-white mt-6">8. Contenu interdit</h2>
-  <p>Il est strictement interdit d'utiliser le service pour :</p>
-  <ul class="list-disc pl-5 space-y-1">
-    <li>Planifier, faciliter ou encourager des actes illégaux.</li>
-    <li>Harceler, menacer, intimider ou nuire à autrui.</li>
-    <li>Soumettre du contenu à caractère pédopornographique.</li>
-    <li>Manipuler, exploiter émotionnellement ou exercer un contrôle coercitif sur une personne.</li>
-    <li>Surveiller, traquer ou espionner une personne sans son consentement.</li>
-  </ul>
-  <p class="mt-2">Toute utilisation abusive entraînera le blocage de l'analyse sans remboursement et pourra donner lieu à un signalement aux autorités compétentes.</p>
-
-  <h2 class="text-xl font-bold text-white mt-6">9. Limitation de responsabilité</h2>
-  <p>Signal Decoder fournit des analyses <strong>probabilistes générées par intelligence artificielle</strong>. En conséquence :</p>
-  <ul class="list-disc pl-5 space-y-1">
-    <li>Les résultats ne sont pas garantis comme exacts, complets ou adaptés à votre situation spécifique.</li>
-    <li>Strategixs ne peut être tenu responsable des décisions prises par l'utilisateur sur la base des analyses.</li>
-    <li>Strategixs ne peut être tenu responsable des dommages indirects, perte de chance, préjudice moral ou émotionnel liés à l'utilisation du service.</li>
-    <li>La responsabilité de Strategixs est limitée au montant payé par l'utilisateur pour l'analyse concernée.</li>
+    <li><strong>The service:</strong> the entire site, its design, source code, and algorithms are the exclusive property of Strategixs. Any reproduction is prohibited.</li>
+    <li><strong>Your texts:</strong> the texts you submit remain your property. You grant us a temporary and limited license to process them via our AI engine.</li>
+    <li><strong>The analyses:</strong> generated analyses are granted to you as a personal, non-transferable license. You may use them freely for private purposes.</li>
   </ul>
 
-  <h2 class="text-xl font-bold text-white mt-6">10. Âge minimum</h2>
-  <p>Le service est réservé aux personnes âgées de <strong>16 ans et plus</strong>. En utilisant le service, vous déclarez avoir au moins 16 ans. Les mineurs de moins de 16 ans ne sont pas autorisés à utiliser ce service.</p>
+  <h2 class="text-xl font-bold text-white mt-6">8. Prohibited content</h2>
+  <p>It is strictly forbidden to use the service to:</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li>Plan, facilitate, or encourage illegal acts.</li>
+    <li>Harass, threaten, intimidate, or harm others.</li>
+    <li>Submit content of a child sexual abuse nature.</li>
+    <li>Manipulate, emotionally exploit, or exercise coercive control over a person.</li>
+    <li>Monitor, stalk, or spy on a person without their consent.</li>
+  </ul>
+  <p class="mt-2">Any abusive use will result in the analysis being blocked without refund and may be reported to the relevant authorities.</p>
 
-  <h2 class="text-xl font-bold text-white mt-6">11. Protection des données</h2>
-  <p>Le traitement de vos données personnelles est détaillé dans notre <a href="/privacy" class="text-violet-400 hover:underline">Politique de Confidentialité</a>. En utilisant le service, vous reconnaissez avoir pris connaissance de cette politique.</p>
+  <h2 class="text-xl font-bold text-white mt-6">9. Limitation of liability</h2>
+  <p>Signal Decoder provides <strong>probabilistic analyses generated by artificial intelligence</strong>. Accordingly:</p>
+  <ul class="list-disc pl-5 space-y-1">
+    <li>Results are not guaranteed to be accurate, complete, or suited to your specific situation.</li>
+    <li>Strategixs cannot be held liable for decisions made by the user based on the analyses.</li>
+    <li>Strategixs cannot be held liable for indirect damages, loss of opportunity, or moral or emotional harm related to use of the service.</li>
+    <li>Strategixs' liability is limited to the amount paid by the user for the analysis in question.</li>
+  </ul>
 
-  <h2 class="text-xl font-bold text-white mt-6">12. Modification des CGU</h2>
-  <p>Les présentes CGU peuvent être modifiées à tout moment. Les modifications prennent effet dès leur publication sur le site. La date de dernière mise à jour en haut de cette page fait foi. L'utilisation continue du service après modification vaut acceptation des nouvelles conditions.</p>
+  <h2 class="text-xl font-bold text-white mt-6">10. Minimum age</h2>
+  <p>The service is reserved for individuals <strong>aged 16 and over</strong>. By using the service, you declare that you are at least 16 years old. Minors under 16 are not authorized to use this service.</p>
 
-  <h2 class="text-xl font-bold text-white mt-6">13. Loi applicable et juridiction</h2>
-  <p>Les présentes CGU sont régies par le <strong>droit français</strong>. Tout litige relatif à l'interprétation ou à l'exécution des présentes sera soumis aux tribunaux compétents de Paris, France, sous réserve des dispositions impératives applicables au consommateur.</p>
-  <p class="mt-2">Conformément à l'article L612-1 du Code de la consommation, en cas de litige, vous pouvez recourir gratuitement au service de médiation de la consommation. Nous vous communiquerons les coordonnées du médiateur compétent sur simple demande.</p>
+  <h2 class="text-xl font-bold text-white mt-6">11. Data protection</h2>
+  <p>The processing of your personal data is detailed in our <a href="/privacy" class="text-violet-400 hover:underline">Privacy Policy</a>. By using the service, you acknowledge having read this policy.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">12. Amendments to the Terms</h2>
+  <p>These Terms of Use may be modified at any time. Changes take effect upon publication on the site. The last updated date at the top of this page prevails. Continued use of the service after modification constitutes acceptance of the new terms.</p>
+
+  <h2 class="text-xl font-bold text-white mt-6">13. Governing law and jurisdiction</h2>
+  <p>These Terms are governed by <strong>French law</strong>. Any dispute relating to the interpretation or performance of these Terms shall be submitted to the competent courts of Paris, France, subject to mandatory consumer protection provisions.</p>
+  <p class="mt-2">In accordance with Article L612-1 of the French Consumer Code, in the event of a dispute, you may use the consumer mediation service free of charge. We will provide the contact details of the competent mediator upon request.</p>
 
   <h2 class="text-xl font-bold text-white mt-6">14. Contact</h2>
-  <p>Pour toute question relative aux présentes CGU : <strong>social@strategixs.net</strong></p>
+  <p>For any questions regarding these Terms: <strong>social@strategixs.net</strong></p>
   `
 }
 

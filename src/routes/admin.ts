@@ -74,7 +74,7 @@ admin.get('/admin/dashboard', async (c) => {
   const revenue = (revenueRow?.total ?? 0) / 100
 
   const html = `<!DOCTYPE html>
-<html lang="fr" data-theme="dark">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -87,7 +87,7 @@ admin.get('/admin/dashboard', async (c) => {
       <div class="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center text-sm font-bold">SST</div>
       <span class="font-semibold text-white">Admin Dashboard</span>
     </div>
-    <a href="/" class="text-gray-400 hover:text-white text-sm">← Retour au site</a>
+    <a href="/" class="text-gray-400 hover:text-white text-sm">← Back to site</a>
   </nav>
 
   <div class="max-w-7xl mx-auto px-6 py-8">
@@ -98,15 +98,15 @@ admin.get('/admin/dashboard', async (c) => {
         <div class="text-3xl font-bold text-white">${total}</div>
       </div>
       <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
-        <div class="text-gray-400 text-sm mb-1">Complétées</div>
+        <div class="text-gray-400 text-sm mb-1">Completed</div>
         <div class="text-3xl font-bold text-green-400">${completedRow?.cnt ?? 0}</div>
       </div>
       <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
-        <div class="text-gray-400 text-sm mb-1">Revenus</div>
+        <div class="text-gray-400 text-sm mb-1">Revenue</div>
         <div class="text-3xl font-bold text-violet-400">${revenue.toFixed(2)}€</div>
       </div>
       <div class="bg-gray-900 rounded-xl p-5 border border-gray-800">
-        <div class="text-gray-400 text-sm mb-1">Taux Conversion</div>
+        <div class="text-gray-400 text-sm mb-1">Conversion Rate</div>
         <div class="text-3xl font-bold text-blue-400">${total > 0 ? (((completedRow?.cnt ?? 0) / total) * 100).toFixed(1) : 0}%</div>
       </div>
     </div>
@@ -114,7 +114,7 @@ admin.get('/admin/dashboard', async (c) => {
     <!-- Filters -->
     <form method="GET" class="flex gap-3 mb-6">
       <select name="status" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200">
-        <option value="">Tous statuts</option>
+        <option value="">All statuses</option>
         <option value="pending_payment" ${status === 'pending_payment' ? 'selected' : ''}>pending_payment</option>
         <option value="paid" ${status === 'paid' ? 'selected' : ''}>paid</option>
         <option value="generating" ${status === 'generating' ? 'selected' : ''}>generating</option>
@@ -123,12 +123,12 @@ admin.get('/admin/dashboard', async (c) => {
         <option value="blocked" ${status === 'blocked' ? 'selected' : ''}>blocked</option>
       </select>
       <select name="offerType" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-200">
-        <option value="">Toutes offres</option>
+        <option value="">All offers</option>
         <option value="quick_decode" ${offerType === 'quick_decode' ? 'selected' : ''}>Quick Decode</option>
         <option value="deep_read" ${offerType === 'deep_read' ? 'selected' : ''}>Deep Read</option>
         <option value="pattern_analysis" ${offerType === 'pattern_analysis' ? 'selected' : ''}>Pattern Analysis</option>
       </select>
-      <button type="submit" class="bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-lg text-sm">Filtrer</button>
+      <button type="submit" class="bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-lg text-sm">Filter</button>
     </form>
 
     <!-- Table -->
@@ -138,11 +138,11 @@ admin.get('/admin/dashboard', async (c) => {
           <tr class="border-b border-gray-800 text-gray-400 text-xs uppercase tracking-wider">
             <th class="px-4 py-3 text-left">ID</th>
             <th class="px-4 py-3 text-left">Email</th>
-            <th class="px-4 py-3 text-left">Offre</th>
+            <th class="px-4 py-3 text-left">Offer</th>
             <th class="px-4 py-3 text-left">Mode</th>
-            <th class="px-4 py-3 text-left">Statut</th>
+            <th class="px-4 py-3 text-left">Status</th>
             <th class="px-4 py-3 text-left">Score</th>
-            <th class="px-4 py-3 text-left">Montant</th>
+            <th class="px-4 py-3 text-left">Amount</th>
             <th class="px-4 py-3 text-left">Date</th>
             <th class="px-4 py-3 text-left">Actions</th>
           </tr>
@@ -157,9 +157,9 @@ admin.get('/admin/dashboard', async (c) => {
             <td class="px-4 py-3">${statusBadge(a.status)}</td>
             <td class="px-4 py-3 font-mono text-xs">${a.confidence_score ? (a.confidence_score * 100).toFixed(0) + '%' : '—'}</td>
             <td class="px-4 py-3 text-green-400">${a.amount_cents ? (a.amount_cents / 100).toFixed(2) + '€' : '—'}</td>
-            <td class="px-4 py-3 text-gray-400 text-xs">${new Date(a.created_at * 1000).toLocaleDateString('fr-FR')}</td>
+            <td class="px-4 py-3 text-gray-400 text-xs">${new Date(a.created_at * 1000).toLocaleDateString('en-US')}</td>
             <td class="px-4 py-3">
-              <a href="/admin/analyses/${a.id}" class="text-blue-400 hover:text-blue-300 text-xs">Détail</a>
+              <a href="/admin/analyses/${a.id}" class="text-blue-400 hover:text-blue-300 text-xs">Detail</a>
             </td>
           </tr>`).join('')}
         </tbody>
@@ -168,10 +168,10 @@ admin.get('/admin/dashboard', async (c) => {
 
     <!-- Pagination -->
     <div class="flex justify-between items-center mt-4 text-sm text-gray-400">
-      <span>${offset + 1}–${Math.min(offset + limit, total)} sur ${total}</span>
+      <span>${offset + 1}–${Math.min(offset + limit, total)} of ${total}</span>
       <div class="flex gap-2">
-        ${offset > 0 ? `<a href="?offset=${offset - limit}&status=${status}&offerType=${offerType}" class="bg-gray-800 px-3 py-1 rounded hover:bg-gray-700">← Préc.</a>` : ''}
-        ${offset + limit < total ? `<a href="?offset=${offset + limit}&status=${status}&offerType=${offerType}" class="bg-gray-800 px-3 py-1 rounded hover:bg-gray-700">Suiv. →</a>` : ''}
+        ${offset > 0 ? `<a href="?offset=${offset - limit}&status=${status}&offerType=${offerType}" class="bg-gray-800 px-3 py-1 rounded hover:bg-gray-700">← Prev</a>` : ''}
+        ${offset + limit < total ? `<a href="?offset=${offset + limit}&status=${status}&offerType=${offerType}" class="bg-gray-800 px-3 py-1 rounded hover:bg-gray-700">Next →</a>` : ''}
       </div>
     </div>
   </div>
@@ -192,19 +192,19 @@ admin.get('/admin/analyses/:id', async (c) => {
 
   const resultJson = analysis.ai_result_json
     ? JSON.stringify(JSON.parse(analysis.ai_result_json as string), null, 2)
-    : 'Pas encore de résultat'
+    : 'No result yet'
 
   const html = `<!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Analyse ${id} — Admin</title>
+  <title>Analysis ${id} — Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-950 text-gray-100 min-h-screen p-8">
   <div class="max-w-4xl mx-auto">
-    <a href="/admin/dashboard" class="text-gray-400 hover:text-white text-sm mb-4 inline-block">← Retour</a>
-    <h1 class="text-2xl font-bold mb-6">Analyse <span class="font-mono text-violet-400">${id}</span></h1>
+    <a href="/admin/dashboard" class="text-gray-400 hover:text-white text-sm mb-4 inline-block">← Back</a>
+    <h1 class="text-2xl font-bold mb-6">Analysis <span class="font-mono text-violet-400">${id}</span></h1>
 
     <div class="grid grid-cols-2 gap-4 mb-6">
       <div class="bg-gray-900 rounded-xl p-4 border border-gray-800">
@@ -212,11 +212,11 @@ admin.get('/admin/analyses/:id', async (c) => {
         <div>${analysis.email ?? '—'}</div>
       </div>
       <div class="bg-gray-900 rounded-xl p-4 border border-gray-800">
-        <div class="text-gray-400 text-xs mb-1">Statut</div>
+        <div class="text-gray-400 text-xs mb-1">Status</div>
         <div class="font-semibold">${analysis.status}</div>
       </div>
       <div class="bg-gray-900 rounded-xl p-4 border border-gray-800">
-        <div class="text-gray-400 text-xs mb-1">Offre</div>
+        <div class="text-gray-400 text-xs mb-1">Offer</div>
         <div>${analysis.offer_type}</div>
       </div>
       <div class="bg-gray-900 rounded-xl p-4 border border-gray-800">
@@ -227,11 +227,11 @@ admin.get('/admin/analyses/:id', async (c) => {
 
     <div class="bg-gray-900 rounded-xl p-4 border border-gray-800 mb-4">
       <div class="text-gray-400 text-xs mb-2">Input Text</div>
-      <p class="text-gray-200">${escapeHtml(String(analysis.input_text ?? 'Non soumis'))}</p>
+      <p class="text-gray-200">${escapeHtml(String(analysis.input_text ?? 'Not submitted'))}</p>
     </div>
 
     <div class="bg-gray-900 rounded-xl p-4 border border-gray-800">
-      <div class="text-gray-400 text-xs mb-2">Résultat JSON IA</div>
+      <div class="text-gray-400 text-xs mb-2">AI JSON Result</div>
       <pre class="text-xs text-green-300 overflow-x-auto max-h-96">${escapeHtml(resultJson)}</pre>
     </div>
   </div>
