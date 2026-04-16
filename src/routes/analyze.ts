@@ -165,7 +165,7 @@ async function runAnalysis(
   const user = await db.prepare(
     `SELECT u.email FROM analyses a LEFT JOIN users u ON a.user_id = u.id WHERE a.id = ?`
   ).bind(analysisId).first<{ email: string | null }>()
-  ghlAnalysisCompleted(user?.email || undefined, input.offerType, confidence).catch(() => {})
+  ghlAnalysisCompleted(user?.email || undefined, input.offerType, confidence, analysisId).catch(() => {})
 }
 
 // GET /api/result/:id

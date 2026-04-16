@@ -190,7 +190,7 @@ checkout.post('/api/webhooks/stripe', async (c) => {
       `SELECT amount_cents FROM payments WHERE stripe_session_id = ?`
     ).bind(session.id).first<{ amount_cents: number }>()
     c.executionCtx?.waitUntil(
-      ghlPaymentSuccess(session.customer_email || '', offerType, paymentRow?.amount_cents || 0)
+      ghlPaymentSuccess(session.customer_email || '', offerType, paymentRow?.amount_cents || 0, analysisId)
     )
   } else if (event.type === 'payment_intent.payment_failed') {
     const pi = event.data.object as { id: string }

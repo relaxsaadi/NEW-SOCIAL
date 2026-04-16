@@ -68,7 +68,7 @@ export function ghlCheckoutStarted(email: string | undefined, offerType: string)
   })
 }
 
-export function ghlPaymentSuccess(email: string, offerType: string, amountCents: number) {
+export function ghlPaymentSuccess(email: string, offerType: string, amountCents: number, analysisId?: string) {
   return sendToGHL({
     event: 'payment_success',
     email,
@@ -78,11 +78,12 @@ export function ghlPaymentSuccess(email: string, offerType: string, amountCents:
       offer_type: offerType,
       amount_paid: amountCents / 100,
       currency: 'EUR',
+      analysis_url: analysisId ? `https://signaldecoder.net/intake/${analysisId}` : '',
     },
   })
 }
 
-export function ghlAnalysisCompleted(email: string | undefined, offerType: string, confidence: number) {
+export function ghlAnalysisCompleted(email: string | undefined, offerType: string, confidence: number, analysisId?: string) {
   return sendToGHL({
     event: 'analysis_completed',
     email,
@@ -91,6 +92,7 @@ export function ghlAnalysisCompleted(email: string | undefined, offerType: strin
     custom_fields: {
       offer_type: offerType,
       confidence_score: Math.round(confidence * 100),
+      result_url: analysisId ? `https://signaldecoder.net/result/${analysisId}` : '',
     },
   })
 }
