@@ -11,7 +11,8 @@
     "db:migrate:local": "wrangler d1 migrations apply sst-production --local",
     "db:migrate:prod": "wrangler d1 migrations apply sst-production",
     "db:seed": "wrangler d1 execute sst-production --local --file=./seed.sql",
-    "db:reset": "rm -rf .wrangler/state/v3/d1 && npm run db:migrate:local"
+    "db:reset": "rm -rf .wrangler/state/v3/d1 && npm run db:migrate:local",
+    "test": "vitest run"
   },
   "dependencies": {
     "hono": "^4.12.10",
@@ -23,6 +24,7 @@
     "@hono/vite-build": "^1.2.0",
     "@hono/vite-dev-server": "^0.18.2",
     "vite": "^6.3.5",
+    "vitest": "^2.1.9",
     "wrangler": "^4.4.0"
   }
 }

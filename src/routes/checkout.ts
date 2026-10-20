@@ -3,6 +3,7 @@ import type { Bindings, OfferType } from '../lib/types'
 import { OFFER_PRICES } from '../lib/types'
 import { ulid, now, getOrCreateUser, logEvent } from '../lib/db'
 import { ghlCheckoutStarted, ghlPaymentSuccess } from '../lib/ghl'
+import { classifyStripeEvent } from '../lib/stripe-scope'
 
 const checkout = new Hono<{ Bindings: Bindings }>()
 
@@ -133,7 +134,19 @@ checkout.post('/api/webhooks/stripe', async (c) => {
     return c.json({ error: 'SIGNATURE_ERROR' }, 400)
   }
 
-  const event = JSON.parse(body) as { type: string; id: string; data: { object: Record<string, unknown> } }
+  let event: { type: string; id: string; data: { object: Record<string, unknown> } }
+  try {
+    event = JSON.parse(body)
+  } catch {
+    return c.json({ error: 'INVALID_JSON' }, 400)
+  }
+
+  // Périmètre : le compte Stripe est partagé avec d'autres produits. Tout événement qui
+  // n'appartient pas à Signal Decoder est ignoré AVANT toute écriture ou tout appel GHL.
+  const scope = await classifyStripeEvent(c.env.DB, event)
+  if (scope.kind === 'ignored') {
+    return c.json({ received: true, ignored: true })
+  }
 
   // Idempotency check
   const existing = await c.env.DB.prepare(
@@ -146,17 +159,15 @@ checkout.post('/api/webhooks/stripe', async (c) => {
 
   const ts = now()
 
-  if (event.type === 'checkout.session.completed') {
+  if (scope.kind === 'purchase') {
     const session = event.data.object as {
       id: string
-      client_reference_id: string
       customer_email?: string
       payment_intent?: string
       metadata?: Record<string, string>
     }
-
-    const analysisId = session.client_reference_id || session.metadata?.analysisId
-    if (!analysisId) return c.json({ received: true })
+    // analysisId vient de metadata.analysisId, vérifié contre la ligne payments de cette session
+    const analysisId = scope.analysisId
 
     // Create or get user
     let userId: string | null = null
@@ -186,28 +197,25 @@ checkout.post('/api/webhooks/stripe', async (c) => {
 
     // Send to GHL — tag as client with offer type
     const offerType = session.metadata?.offerType || 'unknown'
-    const paymentRow = await c.env.DB.prepare(
-      `SELECT amount_cents FROM payments WHERE stripe_session_id = ?`
-    ).bind(session.id).first<{ amount_cents: number }>()
     c.executionCtx?.waitUntil(
-      ghlPaymentSuccess(session.customer_email || '', offerType, paymentRow?.amount_cents || 0, analysisId)
+      ghlPaymentSuccess(session.customer_email || '', offerType, scope.amountCents, analysisId)
     )
-  } else if (event.type === 'payment_intent.payment_failed') {
-    const pi = event.data.object as { id: string }
+  } else if (scope.kind === 'upsell') {
+    // L'upsell est activé par /api/webhooks/upsell-paid (qui envoie aussi l'événement GHL
+    // upsell). Ici on journalise seulement : pas de changement de statut de l'analyse,
+    // pas d'événement GHL « payment_success » en double.
+    await logEvent(c.env.DB, 'upsell_payment_webhook', {
+      analysis_id: scope.analysisId,
+      payload: { stripe_event_id: event.id, upsell_id: scope.upsellId },
+    })
+  } else if (scope.kind === 'payment_failed') {
     await c.env.DB.prepare(
       `UPDATE payments SET status = 'failed', updated_at = ? WHERE stripe_payment_intent_id = ?`
-    ).bind(ts, pi.id).run()
-  } else if (event.type === 'charge.refunded') {
-    const charge = event.data.object as { payment_intent: string }
-    const payment = await c.env.DB.prepare(
-      `SELECT analysis_id FROM payments WHERE stripe_payment_intent_id = ?`
-    ).bind(charge.payment_intent).first<{ analysis_id: string }>()
-
-    if (payment) {
-      await c.env.DB.prepare(`UPDATE payments SET status = 'refunded', updated_at = ? WHERE stripe_payment_intent_id = ?`)
-        .bind(ts, charge.payment_intent).run()
-      await logEvent(c.env.DB, 'payment_refunded', { analysis_id: payment.analysis_id })
-    }
+    ).bind(ts, scope.paymentIntentId).run()
+  } else if (scope.kind === 'refund') {
+    await c.env.DB.prepare(`UPDATE payments SET status = 'refunded', updated_at = ? WHERE stripe_payment_intent_id = ?`)
+      .bind(ts, scope.paymentIntentId).run()
+    await logEvent(c.env.DB, 'payment_refunded', { analysis_id: scope.analysisId })
   }
 
   // Log the event
